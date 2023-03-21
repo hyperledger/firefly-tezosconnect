@@ -36,6 +36,8 @@ var connectorConfig config.Section
 
 func init() {
 	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "f", "", "config file")
+	rootCmd.AddCommand(versionCommand())
+	rootCmd.AddCommand(configCommand())
 	rootCmd.AddCommand(fftmcmd.ClientCommand())
 }
 
@@ -58,7 +60,7 @@ func run() error {
 	ctx, cancelCtx := context.WithCancel(context.Background())
 	defer cancelCtx()
 	ctx = log.WithLogger(ctx, logrus.WithField("pid", fmt.Sprintf("%d", os.Getpid())))
-	ctx = log.WithLogger(ctx, logrus.WithField("prefix", "evmconnect"))
+	ctx = log.WithLogger(ctx, logrus.WithField("prefix", "tezosconnect"))
 
 	config.SetupLogging(ctx)
 
