@@ -15,7 +15,7 @@ coverage: test coverage.html
 lint: ${LINT}
 		$(LINT) run -v --timeout 5m
 ${MOCKERY}:
-		$(VGO) install github.com/vektra/mockery/cmd/mockery@latest
+		$(VGO) install github.com/vektra/mockery/v2@v2.23.0
 ${LINT}:
 		$(VGO) install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.47.3
 mockpaths:
@@ -28,8 +28,8 @@ mocks-$(strip $(1))-$(strip $(2)): ${MOCKERY} mockpaths
 	${MOCKERY} --case underscore --dir $(1) --name $(2) --outpkg $(3) --output mocks/$(strip $(3))
 endef
 
-$(eval $(call makemock, $$(FF_SIGNER_PATH),   Backend,   rpcbackendmocks))
-$(eval $(call makemock, $$(FFTM_PATH),        Manager,   fftmmocks))
+$(eval $(call makemock, $$(FF_SIGNER_PATH), Backend, rpcbackendmocks))
+$(eval $(call makemock, $$(FFTM_PATH), Manager, fftmmocks))
 
 firefly-tezosconnect: ${GOFILES}
 		$(VGO) build -o ./firefly-tezosconnect -ldflags "-X main.buildDate=`date -u +\"%Y-%m-%dT%H:%M:%SZ\"` -X main.buildVersion=$(BUILD_VERSION)" -tags=prod -v ./tezosconnect
