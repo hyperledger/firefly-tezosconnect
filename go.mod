@@ -3,6 +3,7 @@ module github.com/OneOf-Inc/firefly-tezosconnect
 go 1.19
 
 require (
+	github.com/hashicorp/golang-lru v0.5.4
 	github.com/hyperledger/firefly-common v1.2.5
 	github.com/hyperledger/firefly-signer v1.1.5
 	github.com/hyperledger/firefly-transaction-manager v1.2.6
