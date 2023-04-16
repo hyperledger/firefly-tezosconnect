@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 
+	"blockwatch.cc/tzgo/rpc"
 	"github.com/OneOf-Inc/firefly-tezosconnect/internal/msgs"
 	lru "github.com/hashicorp/golang-lru"
 	"github.com/hyperledger/firefly-common/pkg/config"
@@ -22,6 +23,7 @@ import (
 
 type tezosConnector struct {
 	backend                    rpcbackend.Backend
+	client                     *rpc.Client
 	serializer                 *abi.Serializer
 	gasEstimationFactor        *big.Float
 	catchupPageSize            int64
@@ -66,6 +68,7 @@ func NewTezosConnector(ctx context.Context, conf config.Section) (cc ffcapi.API,
 	c.gasEstimationFactor = big.NewFloat(conf.GetFloat64(ConfigGasEstimationFactor))
 
 	c.backend = rpcbackend.NewRPCClient(ffresty.New(ctx, conf))
+	c.client, _ = rpc.NewClient("https://ghostnet.ecadinfra.com", nil)
 
 	c.serializer = abi.NewSerializer().SetByteSerializer(abi.HexByteSerializer0xPrefix)
 	switch conf.Get(ConfigDataFormat) {
