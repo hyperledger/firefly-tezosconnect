@@ -68,7 +68,7 @@ func NewTezosConnector(ctx context.Context, conf config.Section) (cc ffcapi.API,
 	c.gasEstimationFactor = big.NewFloat(conf.GetFloat64(ConfigGasEstimationFactor))
 
 	c.backend = rpcbackend.NewRPCClient(ffresty.New(ctx, conf))
-	c.client, _ = rpc.NewClient("https://ghostnet.ecadinfra.com", nil)
+	c.client, _ = rpc.NewClient("https://rpc.tzstats.com", nil)
 
 	c.serializer = abi.NewSerializer().SetByteSerializer(abi.HexByteSerializer0xPrefix)
 	switch conf.Get(ConfigDataFormat) {

@@ -87,7 +87,7 @@ func (c *tezosConnector) getBlockInfoByHash(ctx context.Context, hashString stri
 			return nil, err
 		}
 
-		blockInfo, err := c.client.GetBlock(ctx, blockHash)
+		blockInfo, err = c.client.GetBlock(ctx, blockHash)
 		if err != nil {
 			return nil, err
 		}
@@ -107,10 +107,11 @@ func transformBlockInfo(bi *rpc.Block, t *ffcapi.BlockInfo) {
 	t.BlockHash = bi.Hash.String()
 	t.ParentHash = bi.Header.Predecessor.String()
 	stringHashes := make([]string, 0)
-	for _, batch := range bi.Operations {
-		for _, tx := range batch {
-			stringHashes = append(stringHashes, tx.Hash.String())
-		}
+	// We take only 'Manager' operations that enable end-users to interact with the Tezos blockchain
+	// e.g., transferring funds or calling smart contracts
+	// see https://tezos.gitlab.io/active/blocks_ops.html#manager-operations-mumbai
+	for _, tx := range bi.Operations[3] {
+		stringHashes = append(stringHashes, tx.Hash.String())
 	}
 	t.TransactionHashes = stringHashes
 }
