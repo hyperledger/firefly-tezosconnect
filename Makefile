@@ -21,6 +21,7 @@ ${LINT}:
 mockpaths:
 		$(eval FFTM_PATH := $(shell $(VGO) list -f '{{.Dir}}' github.com/hyperledger/firefly-transaction-manager/pkg/fftm))
 		$(eval FF_SIGNER_PATH := $(shell $(VGO) list -f '{{.Dir}}' github.com/hyperledger/firefly-signer/pkg/rpcbackend))
+		$(eval TEZOS_CLIENT_PATH := $(shell $(VGO) list -f '{{.Dir}}' blockwatch.cc/tzgo/rpc))
 
 define makemock
 mocks: mocks-$(strip $(1))-$(strip $(2))
@@ -30,6 +31,7 @@ endef
 
 $(eval $(call makemock, $$(FF_SIGNER_PATH), Backend, rpcbackendmocks))
 $(eval $(call makemock, $$(FFTM_PATH), Manager, fftmmocks))
+$(eval $(call makemock, $$(TEZOS_CLIENT_PATH), RpcClient, tzrpcbackendmocks))
 
 firefly-tezosconnect: ${GOFILES}
 		$(VGO) build -o ./firefly-tezosconnect -ldflags "-X main.buildDate=`date -u +\"%Y-%m-%dT%H:%M:%SZ\"` -X main.buildVersion=$(BUILD_VERSION)" -tags=prod -v ./tezosconnect
