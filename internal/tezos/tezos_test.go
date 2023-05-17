@@ -7,6 +7,7 @@ import (
 	"github.com/OneOf-Inc/firefly-tezosconnect/mocks/rpcbackendmocks"
 	"github.com/hyperledger/firefly-common/pkg/config"
 	"github.com/hyperledger/firefly-common/pkg/ffresty"
+	"github.com/hyperledger/firefly-common/pkg/fftls"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
@@ -50,12 +51,24 @@ func TestConnectorInit(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, int64(500), cc.(*tezosConnector).catchupThreshold) // set to page size
 
+	tlsConf := conf.SubSection("tls")
+	tlsConf.Set(fftls.HTTPConfTLSEnabled, true)
+	tlsConf.Set(fftls.HTTPConfTLSCAFile, "!!!badness")
+	cc, err = NewTezosConnector(context.Background(), conf)
+	assert.Regexp(t, "FF00153", err)
+	tlsConf.Set(fftls.HTTPConfTLSEnabled, false)
+
 	conf.Set(ConfigDataFormat, "wrong")
 	cc, err = NewTezosConnector(context.Background(), conf)
 	assert.Regexp(t, "FF23032.*wrong", err)
 
 	conf.Set(ConfigDataFormat, "map")
 	conf.Set(BlockCacheSize, "-1")
+	cc, err = NewTezosConnector(context.Background(), conf)
+	assert.Regexp(t, "FF23040", err)
+
+	conf.Set(BlockCacheSize, "1")
+	conf.Set(TxCacheSize, "-1")
 	cc, err = NewTezosConnector(context.Background(), conf)
 	assert.Regexp(t, "FF23040", err)
 }

@@ -37,6 +37,7 @@ type tezosConnector struct {
 	mux          sync.Mutex
 	eventStreams map[fftypes.UUID]*eventStream
 	blockCache   *lru.Cache
+	txCache      *lru.Cache
 }
 
 func NewTezosConnector(ctx context.Context, conf config.Section) (cc ffcapi.API, err error) {
@@ -59,7 +60,12 @@ func NewTezosConnector(ctx context.Context, conf config.Section) (cc ffcapi.API,
 	}
 	c.blockCache, err = lru.New(conf.GetInt(BlockCacheSize))
 	if err != nil {
-		return nil, i18n.WrapError(ctx, err, msgs.MsgCacheInitFail)
+		return nil, i18n.WrapError(ctx, err, msgs.MsgCacheInitFail, "block")
+	}
+
+	c.txCache, err = lru.New(conf.GetInt(TxCacheSize))
+	if err != nil {
+		return nil, i18n.WrapError(ctx, err, msgs.MsgCacheInitFail, "transaction")
 	}
 
 	if conf.GetString(ffresty.HTTPConfigURL) == "" {
@@ -67,7 +73,13 @@ func NewTezosConnector(ctx context.Context, conf config.Section) (cc ffcapi.API,
 	}
 	c.gasEstimationFactor = big.NewFloat(conf.GetFloat64(ConfigGasEstimationFactor))
 
-	c.backend = rpcbackend.NewRPCClient(ffresty.New(ctx, conf))
+	httpClient, err := ffresty.New(ctx, conf)
+	if err != nil {
+		return nil, err
+	}
+	c.backend = rpcbackend.NewRPCClient(httpClient)
+
+	// c.client, _ = rpc.NewClient("https://ghostnet.ecadinfra.com", nil)
 	c.client, _ = rpc.NewClient("https://rpc.tzstats.com", nil)
 
 	c.serializer = abi.NewSerializer().SetByteSerializer(abi.HexByteSerializer0xPrefix)
