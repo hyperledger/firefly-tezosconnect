@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"blockwatch.cc/tzgo/rpc"
+	"blockwatch.cc/tzgo/signer"
+	"blockwatch.cc/tzgo/tezos"
 	"github.com/OneOf-Inc/firefly-tezosconnect/internal/msgs"
 	lru "github.com/hashicorp/golang-lru"
 	"github.com/hyperledger/firefly-common/pkg/config"
@@ -79,8 +81,12 @@ func NewTezosConnector(ctx context.Context, conf config.Section) (cc ffcapi.API,
 	}
 	c.backend = rpcbackend.NewRPCClient(httpClient)
 
-	// c.client, _ = rpc.NewClient("https://ghostnet.ecadinfra.com", nil)
-	c.client, _ = rpc.NewClient("https://rpc.tzstats.com", nil)
+	c.client, _ = rpc.NewClient("https://ghostnet.ecadinfra.com", nil)
+	// c.client, _ = rpc.NewClient("https://rpc.tzstats.com", nil)
+
+	// TODO: use wallet service to sign transactions
+	ppk, _ := tezos.ParsePrivateKey("edskRiGUaMaNfZ2H2w1B2Btq5YwLNTtT9GK4pRoUCKH2kkaik6bZrDkKWWDKHZqA8gpdFePNudYJMJeACW5jD4Zx9zNYdd1ZWM")
+	c.client.Signer = signer.NewFromKey(ppk)
 
 	c.serializer = abi.NewSerializer().SetByteSerializer(abi.HexByteSerializer0xPrefix)
 	switch conf.Get(ConfigDataFormat) {
