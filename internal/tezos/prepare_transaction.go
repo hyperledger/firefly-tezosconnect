@@ -31,7 +31,8 @@ func (c *tezosConnector) TransactionPrepare(ctx context.Context, req *ffcapi.Tra
 	txArgs.WithDestination(tezos.MustParseAddress(req.To))
 	op.WithContents(txArgs.Encode())
 
-	// TODO: Get last block from cache
+	// Just used to do op serialization correctly.
+	// The real last block hash must be set up just before broadcasting to the chain to not be outdated.
 	hash, _ := c.client.GetBlockHash(ctx, rpc.Head)
 	op.WithBranch(hash)
 
