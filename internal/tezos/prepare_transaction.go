@@ -171,7 +171,7 @@ func convertFFIParamToMicheltonParam(argsMap map[string]interface{}, arg interfa
 func processPrimitive(entry interface{}, propType string) (micheline.Prim, error) {
 	resp := micheline.Prim{}
 	switch propType {
-	case "integer":
+	case "integer", "nat":
 		entryValue, ok := entry.(float64)
 		if !ok {
 			return resp, errors.New("invalid object passed")
@@ -204,6 +204,18 @@ func processPrimitive(entry interface{}, propType string) (micheline.Prim, error
 		}
 
 		resp = micheline.NewPrim(opCode)
+	case "address":
+		entryValue, ok := entry.(string)
+		if !ok {
+			return resp, errors.New("invalid object passed")
+		}
+
+		address, err := tezos.ParseAddress(entryValue)
+		if err != nil {
+			return resp, err
+		}
+
+		resp = micheline.NewAddress(address)
 	}
 
 	return resp, nil
