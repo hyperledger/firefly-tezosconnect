@@ -121,17 +121,14 @@ func processArgs(req *ffcapi.TransactionPrepareRequest, methodName string) (mich
 func convertFFIParamToMicheltonParam(argsMap map[string]interface{}, arg interface{}) (micheline.Prim, error) {
 	resp := micheline.Prim{}
 	argDef := arg.(map[string]interface{})
+	propType := argDef["type"].(string)
+	details := argDef["details"].(map[string]interface{})
 	name := argDef["name"]
 	if name == nil {
 		return resp, fmt.Errorf("property definitions of the \"prefixItems\" in the payload schema must have a \"name\"")
 	}
+
 	entry := argsMap[name.(string)]
-
-	propType := argDef["type"].(string)
-
-	details := argDef["details"].(map[string]interface{})
-	internalType := details["internalType"].(string)
-
 	entryStrValue, ok := entry.(string)
 	if !ok {
 		return resp, errors.New("invalid object passed")
@@ -145,7 +142,7 @@ func convertFFIParamToMicheltonParam(argsMap map[string]interface{}, arg interfa
 	if propType == jsonArrayType {
 		resp = micheline.NewSeq()
 		for _, item := range entry.([]interface{}) {
-			prop, err := processPrimitive(item, internalType)
+			prop, err := processMichelson(item, details)
 			if err != nil {
 				return resp, err
 			}
@@ -153,19 +150,76 @@ func convertFFIParamToMicheltonParam(argsMap map[string]interface{}, arg interfa
 			resp.Args = append(resp.Args, prop)
 		}
 	} else {
-		if internalType == "" {
-			internalType = propType
-		}
-		resp, err = processPrimitive(entry, internalType)
+		resp, err = processMichelson(entry, details)
 		if err != nil {
 			return resp, err
 		}
 	}
 
-	propKind := details["kind"].(string)
-	resp = applyKind(resp, propKind)
-
 	return resp, nil
+}
+
+func processMichelson(entry interface{}, details map[string]interface{}) (micheline.Prim, error) {
+	resp := micheline.Prim{}
+	var err error
+
+	if details["type"] == "schema" {
+		internalSchema := details["internalSchema"].(map[string]interface{})
+		resp, err = processSchemaEntry(entry, internalSchema)
+	} else {
+		internalType := details["internalType"].(string)
+		resp, err = processPrimitive(entry, internalType)
+
+		propKind := details["kind"].(string)
+		resp = applyKind(resp, propKind)
+	}
+
+	return resp, err
+}
+
+func processSchemaEntry(entry interface{}, schema map[string]interface{}) (micheline.Prim, error) {
+	resp := micheline.Prim{}
+	var err error
+	entryType := schema["type"].(string)
+	if entryType != "struct" && entryType != "list" {
+		resp, err = processPrimitive(entry, entryType)
+	} else {
+		schemaArgs := schema["args"].([]interface{})
+
+		var rightPairElem *micheline.Prim
+		for i := len(schemaArgs) - 1; i >= 0; i-- {
+			arg := schemaArgs[i].(map[string]interface{})
+			argName := arg["name"].(string)
+
+			var processEntryReq interface{}
+			if entryType == "struct" {
+				elem := entry.(map[string]interface{})
+				if _, ok := elem[argName]; !ok {
+					return resp, errors.New("Schema field '" + argName + "' wasn't found")
+				}
+				processEntryReq = elem[argName]
+			} else {
+				processEntryReq = entry.([]interface{})
+			}
+
+			processedEntry, err := processSchemaEntry(processEntryReq, arg)
+			if err != nil {
+				return resp, err
+			}
+			newPair := forgePair(processedEntry, rightPairElem)
+			rightPairElem = &newPair
+
+			resp = newPair
+		}
+	}
+	return resp, err
+}
+
+func forgePair(leftElem micheline.Prim, rightElem *micheline.Prim) micheline.Prim {
+	if rightElem == nil {
+		return leftElem
+	}
+	return micheline.NewPair(leftElem, *rightElem)
 }
 
 func processPrimitive(entry interface{}, propType string) (micheline.Prim, error) {
