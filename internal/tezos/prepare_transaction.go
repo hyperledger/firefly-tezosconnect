@@ -191,25 +191,31 @@ func processSchemaEntry(entry interface{}, schema map[string]interface{}) (miche
 			arg := schemaArgs[i].(map[string]interface{})
 			argName := arg["name"].(string)
 
-			var processEntryReq interface{}
 			if entryType == "struct" {
 				elem := entry.(map[string]interface{})
 				if _, ok := elem[argName]; !ok {
 					return resp, errors.New("Schema field '" + argName + "' wasn't found")
 				}
-				processEntryReq = elem[argName]
+
+				processedEntry, err := processSchemaEntry(elem[argName], arg)
+				if err != nil {
+					return resp, err
+				}
+				newPair := forgePair(processedEntry, rightPairElem)
+				rightPairElem = &newPair
+
+				resp = newPair
 			} else {
-				processEntryReq = entry.([]interface{})
+				listResp := micheline.NewSeq()
+				for _, listElem := range entry.([]interface{}) {
+					processedEntry, err := processSchemaEntry(listElem, arg)
+					if err != nil {
+						return resp, err
+					}
+					listResp.Args = append(listResp.Args, processedEntry)
+				}
+				resp = listResp
 			}
-
-			processedEntry, err := processSchemaEntry(processEntryReq, arg)
-			if err != nil {
-				return resp, err
-			}
-			newPair := forgePair(processedEntry, rightPairElem)
-			rightPairElem = &newPair
-
-			resp = newPair
 		}
 	}
 	return resp, err
