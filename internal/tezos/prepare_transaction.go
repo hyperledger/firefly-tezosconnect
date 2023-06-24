@@ -14,20 +14,36 @@ import (
 	"blockwatch.cc/tzgo/tezos"
 	"github.com/hyperledger/firefly-common/pkg/log"
 	"github.com/hyperledger/firefly-transaction-manager/pkg/ffcapi"
-	jsonschema "github.com/xeipuuv/gojsonschema"
 )
 
+// FFI schema types
 const (
-	jsonBooleanType = "boolean"
-	jsonIntegerType = "integer"
-	jsonNumberType  = "number"
-	jsonStringType  = "string"
-	jsonArrayType   = "array"
-	jsonObjectType  = "object"
+	_jsonBoolean = "boolean"
+	_jsonInteger = "integer"
+	_jsonNumber  = "number"
+	_jsonString  = "string"
+	_jsonArray   = "array"
+	_jsonObject  = "object"
+)
+
+// Tezos data types
+const (
+	_internalBoolean = "boolean"
+	_internalList    = "list"
+	_internalStruct  = "struct"
+	_internalInteger = "integer"
+	_internalNat     = "nat"
+	_internalString  = "string"
+	_internalVariant = "variant"
+	_internalOption  = "option"
+	_internalAddress = "address"
+	_internalBytes   = "bytes"
 )
 
 // TransactionPrepare validates transaction inputs against the supplied schema/Michelson and performs any binary serialization required (prior to signing) to encode a transaction from JSON into the native blockchain format
 func (c *tezosConnector) TransactionPrepare(ctx context.Context, req *ffcapi.TransactionPrepareRequest) (*ffcapi.TransactionPrepareResponse, ffcapi.ErrorReason, error) {
+	fmt.Println("TRANSACTION PREPARE REQ")
+
 	var methodName string
 	err := req.Method.Unmarshal(ctx, &methodName)
 	if err != nil {
@@ -82,7 +98,7 @@ func processArgs(req *ffcapi.TransactionPrepareRequest, methodName string) (mich
 	}
 
 	rootType := schemaMap["type"]
-	if rootType.(string) != "array" {
+	if rootType.(string) != _jsonArray {
 		return params, fmt.Errorf("payload schema must define a root type of \"array\"")
 	}
 	// we require the schema to use "prefixItems" to define the ordered array of arguments
@@ -139,7 +155,7 @@ func convertFFIParamToMicheltonParam(argsMap map[string]interface{}, arg interfa
 		return resp, err
 	}
 
-	if propType == jsonArrayType {
+	if propType == _jsonArray {
 		resp = micheline.NewSeq()
 		for _, item := range entry.([]interface{}) {
 			prop, err := processMichelson(item, details)
@@ -181,44 +197,146 @@ func processSchemaEntry(entry interface{}, schema map[string]interface{}) (miche
 	resp := micheline.Prim{}
 	var err error
 	entryType := schema["type"].(string)
-	if entryType != "struct" && entryType != "list" {
-		resp, err = processPrimitive(entry, entryType)
-	} else {
+	switch schema["type"].(string) {
+	case _internalStruct:
 		schemaArgs := schema["args"].([]interface{})
 
 		var rightPairElem *micheline.Prim
 		for i := len(schemaArgs) - 1; i >= 0; i-- {
 			arg := schemaArgs[i].(map[string]interface{})
+
 			argName := arg["name"].(string)
+			elem := entry.(map[string]interface{})
+			if _, ok := elem[argName]; !ok {
+				return resp, errors.New("Schema field '" + argName + "' wasn't found")
+			}
 
-			if entryType == "struct" {
-				elem := entry.(map[string]interface{})
-				if _, ok := elem[argName]; !ok {
-					return resp, errors.New("Schema field '" + argName + "' wasn't found")
-				}
+			processedEntry, err := processSchemaEntry(elem[argName], arg)
+			if err != nil {
+				return resp, err
+			}
+			newPair := forgePair(processedEntry, rightPairElem)
+			rightPairElem = &newPair
 
-				processedEntry, err := processSchemaEntry(elem[argName], arg)
+			resp = newPair
+		}
+	case _internalList:
+		schemaArgs := schema["args"].([]interface{})
+
+		for i := len(schemaArgs) - 1; i >= 0; i-- {
+			arg := schemaArgs[i].(map[string]interface{})
+
+			listResp := micheline.NewSeq()
+			for _, listElem := range entry.([]interface{}) {
+				processedEntry, err := processSchemaEntry(listElem, arg)
 				if err != nil {
 					return resp, err
 				}
-				newPair := forgePair(processedEntry, rightPairElem)
-				rightPairElem = &newPair
+				listResp.Args = append(listResp.Args, processedEntry)
+			}
+			resp = listResp
+		}
+	case _internalVariant:
+		schemaArgs := schema["args"].([]interface{})
+		arg := schemaArgs[0].(map[string]interface{})
+		elem := entry.(map[string]interface{})
 
-				resp = newPair
-			} else {
-				listResp := micheline.NewSeq()
-				for _, listElem := range entry.([]interface{}) {
-					processedEntry, err := processSchemaEntry(listElem, arg)
-					if err != nil {
-						return resp, err
-					}
-					listResp.Args = append(listResp.Args, processedEntry)
+		variants := schema["variants"].([]interface{})
+		for i, variant := range variants {
+			if el, ok := elem[variant.(string)]; ok {
+				processedEntry, err := processSchemaEntry(el, arg)
+				if err != nil {
+					return resp, err
 				}
-				resp = listResp
+				if len(variants) == 1 || len(variants) > 4 {
+					return resp, errors.New("wrong number of variants")
+				}
+				resp = wrapWithVariant(processedEntry, i+1, len(variants))
+				break
 			}
 		}
+	default:
+		resp, err = processPrimitive(entry, entryType)
 	}
+
 	return resp, err
+}
+
+// TODO: think about an algorithm to support any number of variants.
+// at the moment, support for up to 4 variants covers most cases
+func wrapWithVariant(elem micheline.Prim, variantPos int, totalVariantsCount int) micheline.Prim {
+	res := micheline.Prim{}
+	if totalVariantsCount == 2 {
+		branch := micheline.D_LEFT
+		if variantPos == 2 {
+			branch = micheline.D_RIGHT
+		}
+		res = micheline.NewCode(
+			branch,
+			elem,
+		)
+	} else if totalVariantsCount == 3 {
+		switch variantPos {
+		case 1:
+			res = micheline.NewCode(
+				micheline.D_LEFT,
+				elem,
+			)
+		case 2:
+			res = micheline.NewCode(
+				micheline.D_RIGHT,
+				micheline.NewCode(
+					micheline.D_LEFT,
+					elem,
+				),
+			)
+		case 3:
+			res = micheline.NewCode(
+				micheline.D_RIGHT,
+				micheline.NewCode(
+					micheline.D_RIGHT,
+					elem,
+				),
+			)
+		}
+	} else if totalVariantsCount == 4 {
+		switch variantPos {
+		case 1:
+			res = micheline.NewCode(
+				micheline.D_LEFT,
+				micheline.NewCode(
+					micheline.D_LEFT,
+					elem,
+				),
+			)
+		case 2:
+			res = micheline.NewCode(
+				micheline.D_LEFT,
+				micheline.NewCode(
+					micheline.D_RIGHT,
+					elem,
+				),
+			)
+		case 3:
+			res = micheline.NewCode(
+				micheline.D_RIGHT,
+				micheline.NewCode(
+					micheline.D_LEFT,
+					elem,
+				),
+			)
+		case 4:
+			res = micheline.NewCode(
+				micheline.D_RIGHT,
+				micheline.NewCode(
+					micheline.D_RIGHT,
+					elem,
+				),
+			)
+		}
+	}
+
+	return res
 }
 
 func forgePair(leftElem micheline.Prim, rightElem *micheline.Prim) micheline.Prim {
@@ -231,28 +349,28 @@ func forgePair(leftElem micheline.Prim, rightElem *micheline.Prim) micheline.Pri
 func processPrimitive(entry interface{}, propType string) (micheline.Prim, error) {
 	resp := micheline.Prim{}
 	switch propType {
-	case "integer", "nat":
+	case _internalInteger, _internalNat:
 		entryValue, ok := entry.(float64)
 		if !ok {
 			return resp, errors.New("invalid object passed")
 		}
 
 		resp = micheline.NewInt64(int64(entryValue))
-	case "string":
+	case _internalString:
 		arg, ok := entry.(string)
 		if !ok {
 			return resp, errors.New("invalid object passed")
 		}
 
 		resp = micheline.NewString(arg)
-	case "bytes":
+	case _internalBytes:
 		entryValue, ok := entry.(string)
 		if !ok {
 			return resp, errors.New("invalid object passed")
 		}
 
 		resp = micheline.NewBytes([]byte(entryValue))
-	case "boolean":
+	case _internalBoolean:
 		entryValue, ok := entry.(bool)
 		if !ok {
 			return resp, errors.New("invalid object passed")
@@ -264,7 +382,7 @@ func processPrimitive(entry interface{}, propType string) (micheline.Prim, error
 		}
 
 		resp = micheline.NewPrim(opCode)
-	case "address":
+	case _internalAddress:
 		entryValue, ok := entry.(string)
 		if !ok {
 			return resp, errors.New("invalid object passed")
@@ -283,26 +401,8 @@ func processPrimitive(entry interface{}, propType string) (micheline.Prim, error
 
 func applyKind(param micheline.Prim, kind string) micheline.Prim {
 	switch kind {
-	case "option":
+	case _internalOption:
 		return micheline.NewOption(param)
 	}
 	return param
-}
-
-func validate(def map[string]interface{}, name string, value interface{}) error {
-	// let's use the schema to validate the body args payload first
-	document := jsonschema.NewGoLoader(value)
-	schemaloader := jsonschema.NewGoLoader(def)
-	result, err := jsonschema.Validate(schemaloader, document)
-	if err != nil {
-		return fmt.Errorf("failed to validate argument \"%s\": %s", name, err)
-	}
-	if !result.Valid() {
-		errorMsg := ""
-		for _, desc := range result.Errors() {
-			errorMsg = fmt.Sprintf("%s- %s\n", errorMsg, desc)
-		}
-		return fmt.Errorf("failed to validate argument \"%s\": %s", name, errorMsg)
-	}
-	return nil
 }

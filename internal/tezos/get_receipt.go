@@ -13,6 +13,8 @@ import (
 
 // TransactionReceipt queries to see if a receipt is available for a given transaction hash
 func (c *tezosConnector) TransactionReceipt(ctx context.Context, req *ffcapi.TransactionReceiptRequest) (*ffcapi.TransactionReceiptResponse, ffcapi.ErrorReason, error) {
+	fmt.Println("TRANSACTION RECEIPT REQ")
+
 	// TODO: Now Tezos client also acts as a comfirmation manager and listen the blockchain to get tx receipt.
 	// FF tx manager should deal with it instead. This solution is temporary, for MVP purpose only.
 	db, err := leveldb.OpenFile("/tmp/txs", nil)

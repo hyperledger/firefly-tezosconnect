@@ -85,7 +85,7 @@ func NewTezosConnector(ctx context.Context, conf config.Section) (cc ffcapi.API,
 	// c.client, _ = rpc.NewClient("https://rpc.tzstats.com", nil)
 
 	// TODO: use wallet service to sign transactions
-	ppk, _ := tezos.ParsePrivateKey("edskRiGUaMaNfZ2H2w1B2Btq5YwLNTtT9GK4pRoUCKH2kkaik6bZrDkKWWDKHZqA8gpdFePNudYJMJeACW5jD4Zx9zNYdd1ZWM")
+	ppk, _ := tezos.ParsePrivateKey("edskRpzTWV1MzaC7eSokmmujg55Dq9EBmx9SMZu2tyqv71jhcQn7ADrN1RG9Y6zPKNeJAvUV788uaLmdNhdK5RaBgG3SnbnCX9")
 	c.client.Signer = signer.NewFromKey(ppk)
 
 	c.serializer = abi.NewSerializer().SetByteSerializer(abi.HexByteSerializer0xPrefix)
