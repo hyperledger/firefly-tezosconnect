@@ -33,6 +33,17 @@ func (c *tezosConnector) TransactionSend(ctx context.Context, req *ffcapi.Transa
 	hash, _ := c.client.GetBlockHash(ctx, rpc.Head)
 	op.WithBranch(hash)
 
+	// assign nonce
+	nextCounter := req.Nonce.Int64()
+	for _, op := range op.Contents {
+		// skip non-manager ops
+		if op.GetCounter() < 0 {
+			continue
+		}
+		op.WithCounter(nextCounter)
+		nextCounter++
+	}
+
 	receipt, err := c.client.Send(ctx, op, nil)
 	if err != nil {
 		return nil, ffcapi.ErrorReasonInvalidInputs, err
