@@ -13,7 +13,6 @@ import (
 	"github.com/OneOf-Inc/firefly-tezosconnect/internal/msgs"
 	lru "github.com/hashicorp/golang-lru"
 	"github.com/hyperledger/firefly-common/pkg/config"
-	"github.com/hyperledger/firefly-common/pkg/ffresty"
 	"github.com/hyperledger/firefly-common/pkg/fftypes"
 	"github.com/hyperledger/firefly-common/pkg/i18n"
 	"github.com/hyperledger/firefly-common/pkg/log"
@@ -25,7 +24,6 @@ import (
 
 type tezosConnector struct {
 	backend                    rpcbackend.Backend
-	client                     *rpc.Client
 	serializer                 *abi.Serializer
 	gasEstimationFactor        *big.Float
 	catchupPageSize            int64
@@ -35,6 +33,9 @@ type tezosConnector struct {
 	eventBlockTimestamps       bool
 	blockListener              *blockListener
 	eventFilterPollingInterval time.Duration
+
+	client      *rpc.Client
+	networkName string
 
 	mux          sync.Mutex
 	eventStreams map[fftypes.UUID]*eventStream
@@ -70,19 +71,11 @@ func NewTezosConnector(ctx context.Context, conf config.Section) (cc ffcapi.API,
 		return nil, i18n.WrapError(ctx, err, msgs.MsgCacheInitFail, "transaction")
 	}
 
-	if conf.GetString(ffresty.HTTPConfigURL) == "" {
-		return nil, i18n.NewError(ctx, msgs.MsgMissingBackendURL)
-	}
-	c.gasEstimationFactor = big.NewFloat(conf.GetFloat64(ConfigGasEstimationFactor))
-
-	httpClient, err := ffresty.New(ctx, conf)
+	c.client, err = rpc.NewClient(conf.GetString(BlockchainRPC), nil)
 	if err != nil {
-		return nil, err
+		return nil, i18n.WrapError(ctx, err, msgs.MsgInvalidRpcUrl)
 	}
-	c.backend = rpcbackend.NewRPCClient(httpClient)
-
-	c.client, _ = rpc.NewClient("https://ghostnet.ecadinfra.com", nil)
-	// c.client, _ = rpc.NewClient("https://rpc.tzstats.com", nil)
+	c.networkName = conf.GetString(BlockchainNetwork)
 
 	// TODO: use wallet service to sign transactions
 	ppk, _ := tezos.ParsePrivateKey("edskRpzTWV1MzaC7eSokmmujg55Dq9EBmx9SMZu2tyqv71jhcQn7ADrN1RG9Y6zPKNeJAvUV788uaLmdNhdK5RaBgG3SnbnCX9")

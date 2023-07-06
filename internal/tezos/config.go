@@ -19,6 +19,8 @@ const (
 	RetryMaxDelay               = "retry.maxDelay"
 	RetryFactor                 = "retry.factor"
 	TxCacheSize                 = "txCacheSize"
+	BlockchainRPC               = "blockchain.rpc"
+	BlockchainNetwork           = "blockchain.network"
 )
 
 const (
@@ -49,4 +51,6 @@ func InitConfig(conf config.Section) {
 	conf.AddKnownKey(RetryInitDelay, DefaultRetryInitDelay)
 	conf.AddKnownKey(RetryMaxDelay, DefaultRetryMaxDelay)
 	conf.AddKnownKey(TxCacheSize, 250)
+	conf.AddKnownKey(BlockchainRPC, "https://rpc.tzstats.com")
+	conf.AddKnownKey(BlockchainNetwork, "mainnet")
 }

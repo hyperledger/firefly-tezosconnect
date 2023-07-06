@@ -7,6 +7,6 @@ import (
 )
 
 // GasPriceEstimate provides a blockchain specific gas price estimate
-func (c *tezosConnector) GasPriceEstimate(ctx context.Context, req *ffcapi.GasPriceEstimateRequest) (*ffcapi.GasPriceEstimateResponse, ffcapi.ErrorReason, error) {
+func (c *tezosConnector) GasPriceEstimate(ctx context.Context, _ *ffcapi.GasPriceEstimateRequest) (*ffcapi.GasPriceEstimateResponse, ffcapi.ErrorReason, error) {
 	return nil, "", nil
 }

@@ -1,8 +1,9 @@
 log:
   level: debug
 connector:
-  url: http://127.0.0.1:5100
-  # url: http://127.0.0.1:8545
+  blockchain:
+    rpc: https://ghostnet.ecadinfra.com
+    network: ghostnet
 persistence:
   leveldb:
     # path: ./.leveldb // SET BY ENV VARIABLE
