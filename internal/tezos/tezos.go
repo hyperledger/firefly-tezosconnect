@@ -2,14 +2,11 @@ package tezos
 
 import (
 	"context"
-	"fmt"
 	"math/big"
 	"sync"
 	"time"
 
 	"blockwatch.cc/tzgo/rpc"
-	"blockwatch.cc/tzgo/signer"
-	"blockwatch.cc/tzgo/tezos"
 	"github.com/OneOf-Inc/firefly-tezosconnect/internal/msgs"
 	lru "github.com/hashicorp/golang-lru"
 	"github.com/hyperledger/firefly-common/pkg/config"
@@ -34,8 +31,9 @@ type tezosConnector struct {
 	blockListener              *blockListener
 	eventFilterPollingInterval time.Duration
 
-	client      *rpc.Client
-	networkName string
+	client       *rpc.Client
+	networkName  string
+	signatoryURL string
 
 	mux          sync.Mutex
 	eventStreams map[fftypes.UUID]*eventStream
@@ -76,29 +74,7 @@ func NewTezosConnector(ctx context.Context, conf config.Section) (cc ffcapi.API,
 		return nil, i18n.WrapError(ctx, err, msgs.MsgInvalidRpcUrl)
 	}
 	c.networkName = conf.GetString(BlockchainNetwork)
-
-	// TODO: use wallet service to sign transactions
-	ppk, _ := tezos.ParsePrivateKey("edskRpzTWV1MzaC7eSokmmujg55Dq9EBmx9SMZu2tyqv71jhcQn7ADrN1RG9Y6zPKNeJAvUV788uaLmdNhdK5RaBgG3SnbnCX9")
-	c.client.Signer = signer.NewFromKey(ppk)
-
-	c.serializer = abi.NewSerializer().SetByteSerializer(abi.HexByteSerializer0xPrefix)
-	switch conf.Get(ConfigDataFormat) {
-	case "map":
-		c.serializer.SetFormattingMode(abi.FormatAsObjects)
-	case "flat_array":
-		c.serializer.SetFormattingMode(abi.FormatAsFlatArrays)
-	case "self_describing":
-		c.serializer.SetFormattingMode(abi.FormatAsSelfDescribingArrays)
-	default:
-		return nil, i18n.NewError(ctx, msgs.MsgBadDataFormat, conf.Get(ConfigDataFormat), "map,flat_array,self_describing")
-	}
-	c.serializer.SetDefaultNameGenerator(func(idx int) string {
-		name := "output"
-		if idx > 0 {
-			name = fmt.Sprintf("%s%v", name, idx)
-		}
-		return name
-	})
+	c.signatoryURL = conf.GetString(BlockchainSignatory)
 
 	c.blockListener = newBlockListener(ctx, c, conf)
 

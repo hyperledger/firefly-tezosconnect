@@ -21,6 +21,7 @@ const (
 	TxCacheSize                 = "txCacheSize"
 	BlockchainRPC               = "blockchain.rpc"
 	BlockchainNetwork           = "blockchain.network"
+	BlockchainSignatory         = "blockchain.signatory"
 )
 
 const (
@@ -53,4 +54,5 @@ func InitConfig(conf config.Section) {
 	conf.AddKnownKey(TxCacheSize, 250)
 	conf.AddKnownKey(BlockchainRPC, "https://rpc.tzstats.com")
 	conf.AddKnownKey(BlockchainNetwork, "mainnet")
+	conf.AddKnownKey(BlockchainSignatory)
 }

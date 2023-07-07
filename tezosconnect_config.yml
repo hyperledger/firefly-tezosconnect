@@ -4,6 +4,7 @@ connector:
   blockchain:
     rpc: https://ghostnet.ecadinfra.com
     network: ghostnet
+    signatory: http://localhost:6732
 persistence:
   leveldb:
     # path: ./.leveldb // SET BY ENV VARIABLE
