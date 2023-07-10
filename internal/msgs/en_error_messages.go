@@ -49,5 +49,6 @@ var (
 	MsgDecodeBytecodeFailed      = ffe("FF23047", "Failed to decode 'bytecode' as hex or Base64")
 	MsgInvalidTXHashReturned     = ffe("FF23048", "Received invalid transaction hash from node len=%d")
 	MsgUnmarshalErrorFail        = ffe("FF23049", "Failed to parse error %d: %s")
-	MsgInvalidRpcUrl             = ffe("FF23051", "Invalid RPC node URL")
+	MsgMissingRpcUrl             = ffe("FF23051", "Blockchain RPC node URL must be set")
+	MsgFailedRpcInitialization   = ffe("FF23052", "Failed to initialize blockchain RPC client")
 )

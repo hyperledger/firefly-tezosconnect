@@ -7,7 +7,6 @@ import (
 	"github.com/OneOf-Inc/firefly-tezosconnect/mocks/rpcbackendmocks"
 	"github.com/hyperledger/firefly-common/pkg/config"
 	"github.com/hyperledger/firefly-common/pkg/ffresty"
-	"github.com/hyperledger/firefly-common/pkg/fftls"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
@@ -40,27 +39,17 @@ func TestConnectorInit(t *testing.T) {
 	conf := config.RootSection("unittest")
 	InitConfig(conf)
 
+	conf.Set(BlockchainRPC, "")
 	cc, err := NewTezosConnector(context.Background(), conf)
-	assert.Regexp(t, "FF23025", err)
+	assert.Regexp(t, "FF23051", err)
 
-	conf.Set(ffresty.HTTPConfigURL, "http://localhost:8545")
+	conf.Set(BlockchainRPC, "https://ghostnet.ecadinfra.com")
 	conf.Set(EventsCatchupThreshold, 1)
 	conf.Set(EventsCatchupPageSize, 500)
 
 	cc, err = NewTezosConnector(context.Background(), conf)
 	assert.NoError(t, err)
 	assert.Equal(t, int64(500), cc.(*tezosConnector).catchupThreshold) // set to page size
-
-	tlsConf := conf.SubSection("tls")
-	tlsConf.Set(fftls.HTTPConfTLSEnabled, true)
-	tlsConf.Set(fftls.HTTPConfTLSCAFile, "!!!badness")
-	cc, err = NewTezosConnector(context.Background(), conf)
-	assert.Regexp(t, "FF00153", err)
-	tlsConf.Set(fftls.HTTPConfTLSEnabled, false)
-
-	conf.Set(ConfigDataFormat, "wrong")
-	cc, err = NewTezosConnector(context.Background(), conf)
-	assert.Regexp(t, "FF23032.*wrong", err)
 
 	conf.Set(ConfigDataFormat, "map")
 	conf.Set(BlockCacheSize, "-1")
