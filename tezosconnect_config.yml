@@ -7,7 +7,7 @@ connector:
     signatory: http://localhost:6732
 persistence:
   leveldb:
-    # path: ./.leveldb // SET BY ENV VARIABLE
+    path: ./.leveldb
 ffcore:
   url: http://127.0.0.1:5101
   namespaces:
