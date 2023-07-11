@@ -14,7 +14,6 @@ import (
 	"blockwatch.cc/tzgo/tezos"
 	"github.com/hyperledger/firefly-common/pkg/log"
 	"github.com/hyperledger/firefly-transaction-manager/pkg/ffcapi"
-	"github.com/syndtr/goleveldb/leveldb"
 )
 
 // TransactionSend combines a previously prepared encoded transaction, with a current gas price, and submits it to the transaction pool of the blockchain for mining
@@ -72,53 +71,15 @@ func (c *tezosConnector) TransactionSend(ctx context.Context, req *ffcapi.Transa
 		}
 	}
 
-	c.signTxRemotely(ctx, op)
+	err = c.signTxRemotely(ctx, op)
+	if err != nil {
+		return nil, "", err
+	}
 
 	// broadcast
 	hash, err := c.client.Broadcast(ctx, op)
 	if err != nil {
 		return nil, "", err
-	}
-
-	// wait for confirmations
-	res := rpc.NewResult(hash).WithTTL(op.TTL).WithConfirmations(opts.Confirmations)
-
-	// use custom observer when provided
-	mon := c.client.BlockObserver
-	if opts.Observer != nil {
-		mon = opts.Observer
-	}
-
-	// ensure block observer is running
-	mon.Listen(c.client)
-
-	// wait for confirmations
-	res.Listen(mon)
-	res.WaitContext(ctx)
-	if err := res.Err(); err != nil {
-		return nil, "", err
-	}
-
-	// return receipt
-	receipt, err := res.GetReceipt(ctx)
-	if err != nil {
-		return nil, "", err
-	}
-	fmt.Println("TRANSACTION SENT SUCCESSFULLY (OP HASH - " + receipt.Op.Hash.String() + ")")
-
-	// TODO: Now Tezos client also acts as a comfirmation manager and listen the blockchain to get tx receipt.
-	// FF tx manager should deal with it instead. This solution is temporary, for MVP purpose only.
-	db, err := leveldb.OpenFile("/tmp/txs", nil)
-	if err != nil {
-		return nil, "", err
-	}
-	defer db.Close()
-
-	receiptData, _ := json.Marshal(receipt)
-
-	err = db.Put([]byte(hash.String()), receiptData, nil)
-	if err != nil {
-		return nil, ffcapi.ErrorReasonInvalidInputs, err
 	}
 
 	return &ffcapi.TransactionSendResponse{
