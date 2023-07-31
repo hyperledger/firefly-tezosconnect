@@ -97,8 +97,6 @@ func getNetworkParamsByName(name string) *tezos.Params {
 	switch strings.ToLower(name) {
 	case "ghostnet":
 		return tezos.GhostnetParams
-	case "mumbainet":
-		return tezos.MumbainetParams
 	case "nairobinet":
 		return tezos.NairobinetParams
 	default:

@@ -23,6 +23,6 @@ var (
 	ConfigEventsFilterPollingInterval = ffc("config.connector.events.filterPollingInterval", "The interval between polling calls to a filter, when checking for newly arrived events", i18n.TimeDurationType)
 	ConfigTxCacheSize                 = ffc("config.connector.txCacheSize", "Maximum of transactions to hold in the transaction info cache", i18n.IntType)
 	ConfigTezosRPC                    = ffc("config.connector.blockchain.rpc", "URL of the Tezos RPC node", "string")
-	ConfigTezosNetwork                = ffc("config.connector.blockchain.network", "Tezos network, by default - mainnet (mainnet | ghostnet | mumbainet | nairobinet)", "string")
+	ConfigTezosNetwork                = ffc("config.connector.blockchain.network", "Tezos network, by default - mainnet (mainnet | ghostnet | nairobinet)", "string")
 	ConfigTezosSignatory              = ffc("config.connector.blockchain.signatory", "URL of the signatory service for remote tx signing", "string")
 )
