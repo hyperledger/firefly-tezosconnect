@@ -3,7 +3,6 @@ package tezos
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 
 	"blockwatch.cc/tzgo/micheline"
 	"blockwatch.cc/tzgo/rpc"
@@ -31,8 +30,6 @@ type receiptExtraInfo struct {
 
 // TransactionReceipt queries to see if a receipt is available for a given transaction hash
 func (c *tezosConnector) TransactionReceipt(ctx context.Context, req *ffcapi.TransactionReceiptRequest) (*ffcapi.TransactionReceiptResponse, ffcapi.ErrorReason, error) {
-	fmt.Println("TRANSACTION RECEIPT REQ")
-
 	// wait for confirmations
 	res := rpc.NewResult(tezos.MustParseOpHash(req.TransactionHash)) //.WithTTL(op.TTL).WithConfirmations(opts.Confirmations)
 

@@ -3,6 +3,10 @@ package tezos
 import (
 	"context"
 	"encoding/hex"
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
 	"strings"
 
 	"blockwatch.cc/tzgo/codec"
@@ -79,8 +83,35 @@ func (c *tezosConnector) completeOp(ctx context.Context, op *codec.Op, fromStrin
 
 	op.WithParams(getNetworkParamsByName(c.networkName))
 
+	state, err := c.client.GetContractExt(ctx, fromAddress, rpc.Head)
+	if err != nil {
+		return err
+	}
+
+	// add reveal if necessary
+	if !state.IsRevealed() {
+		key, err := c.getPubKeyFromSignatory(op.Source.String())
+		if err != nil {
+			return err
+		}
+
+		reveal := &codec.Reveal{
+			Manager: codec.Manager{
+				Source: fromAddress,
+			},
+			PublicKey: *key,
+		}
+		reveal.WithLimits(rpc.DefaultRevealLimits)
+		op.WithContentsFront(reveal)
+	}
+
 	// assign nonce
 	nextCounter := nonce.Int64()
+	// Note: there are situations when a nonce becomes obsolete after assigning it to connector.NextNonceForSigner.
+	// In such cases, we update it with a more recent one.
+	if nextCounter <= state.Counter {
+		nextCounter = state.Counter + 1
+	}
 	for _, op := range op.Contents {
 		// skip non-manager ops
 		if op.GetCounter() < 0 {
@@ -102,4 +133,42 @@ func getNetworkParamsByName(name string) *tezos.Params {
 	default:
 		return tezos.DefaultParams
 	}
+}
+
+func (c *tezosConnector) getPubKeyFromSignatory(tezosAddress string) (*tezos.Key, error) {
+	url := c.signatoryURL + "/keys/" + tezosAddress
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("signatory resp with wrong status code %d", resp.StatusCode)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var pubKeyJson struct {
+		PubKey string `json:"public_key"`
+	}
+	err = json.Unmarshal(body, &pubKeyJson)
+	if err != nil {
+		return nil, err
+	}
+
+	key, err := tezos.ParseKey(pubKeyJson.PubKey)
+	if err != nil {
+		return nil, err
+	}
+
+	return &key, nil
 }

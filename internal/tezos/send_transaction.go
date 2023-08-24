@@ -6,7 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"blockwatch.cc/tzgo/codec"
@@ -18,7 +18,6 @@ import (
 
 // TransactionSend combines a previously prepared encoded transaction, with a current gas price, and submits it to the transaction pool of the blockchain for mining
 func (c *tezosConnector) TransactionSend(ctx context.Context, req *ffcapi.TransactionSendRequest) (*ffcapi.TransactionSendResponse, ffcapi.ErrorReason, error) {
-	fmt.Println("TRANSACTION SEND REQ")
 	opBytes, err := hex.DecodeString(req.TransactionData)
 	if err != nil {
 		return nil, ffcapi.ErrorReasonInvalidInputs, err
@@ -37,7 +36,8 @@ func (c *tezosConnector) TransactionSend(ctx context.Context, req *ffcapi.Transa
 	// simulate to check tx validity and estimate cost
 	sim, err := c.client.Simulate(ctx, op, opts)
 	if err != nil {
-		return nil, "", err
+		rpcErr := err.(rpc.RPCError)
+		return nil, mapError(sendRPCMethods, rpcErr), rpcErr
 	}
 
 	// fail with Tezos error when simulation failed
@@ -79,7 +79,8 @@ func (c *tezosConnector) TransactionSend(ctx context.Context, req *ffcapi.Transa
 	// broadcast
 	hash, err := c.client.Broadcast(ctx, op)
 	if err != nil {
-		return nil, "", err
+		rpcErr := err.(rpc.RPCError)
+		return nil, mapError(sendRPCMethods, rpcErr), rpcErr
 	}
 
 	return &ffcapi.TransactionSendResponse{
@@ -106,7 +107,7 @@ func (c *tezosConnector) signTxRemotely(ctx context.Context, op *codec.Op) error
 	}
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}

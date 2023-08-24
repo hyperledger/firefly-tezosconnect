@@ -10,6 +10,7 @@ type tezosRPCMethodCategory int
 
 const (
 	blockRPCMethods tezosRPCMethodCategory = iota
+	sendRPCMethods
 )
 
 // mapErrorToReason provides a common place for mapping Tezos client
@@ -23,6 +24,11 @@ func mapError(methodType tezosRPCMethodCategory, err error) ffcapi.ErrorReason {
 	case blockRPCMethods:
 		if strings.Contains(errString, "status 404") {
 			return ffcapi.ErrorReasonNotFound
+		}
+	case sendRPCMethods:
+		switch {
+		case strings.Contains(errString, "counter_in_the_past"):
+			return ffcapi.ErrorReasonNonceTooLow
 		}
 	}
 
