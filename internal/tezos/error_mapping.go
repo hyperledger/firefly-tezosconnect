@@ -1,6 +1,7 @@
 package tezos
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/hyperledger/firefly-transaction-manager/pkg/ffcapi"
@@ -34,4 +35,40 @@ func mapError(methodType tezosRPCMethodCategory, err error) ffcapi.ErrorReason {
 
 	// Best default in FFCAPI is to provide no mapping
 	return ""
+}
+
+func ErrorStatus(err error) int {
+	switch e := err.(type) {
+	case *httpError:
+		return e.statusCode
+	default:
+		return 0
+	}
+}
+
+type httpError struct {
+	request    string
+	status     string
+	statusCode int
+	body       []byte
+}
+
+func (e *httpError) Error() string {
+	return fmt.Sprintf("rpc: %s status %d (%v)", e.request, e.statusCode, string(e.body))
+}
+
+func (e *httpError) Request() string {
+	return e.request
+}
+
+func (e *httpError) Status() string {
+	return e.status
+}
+
+func (e *httpError) StatusCode() int {
+	return e.statusCode
+}
+
+func (e *httpError) Body() []byte {
+	return e.body
 }

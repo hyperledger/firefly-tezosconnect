@@ -2,9 +2,9 @@ log:
   level: debug
 connector:
   blockchain:
-    rpc: https://ghostnet.ecadinfra.com
+    rpc: https://rpc.ghost.tzstats.com
     network: ghostnet
-    signatory: http://localhost:6732
+    signatory: http://127.0.0.1:6732
 persistence:
   leveldb:
     path: ./.leveldb

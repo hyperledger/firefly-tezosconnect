@@ -78,15 +78,12 @@ func (bl *blockListener) listenLoop() {
 		log.L(bl.ctx).Warnf("Block listener exiting before establishing initial block height: %s", err)
 	}
 
-	mon := rpc.NewBlockHeaderMonitor()
-	defer mon.Close()
-
-	// register the block monitor with our client
-	if err := bl.c.client.MonitorBlockHeader(bl.ctx, mon); err != nil {
-		log.L(bl.ctx).Error(err)
-	}
-
-	// var filter string
+	var mon *rpc.BlockHeaderMonitor
+	defer func() {
+		if mon != nil {
+			mon.Close()
+		}
+	}()
 	failCount := 0
 	gapPotential := true
 	for {
@@ -105,12 +102,37 @@ func (bl *blockListener) listenLoop() {
 			}
 		}
 
+		// (re)connect
+		if mon == nil {
+			mon = rpc.NewBlockHeaderMonitor()
+
+			// register the block monitor with our client
+			if err := bl.c.client.MonitorBlockHeader(bl.ctx, mon); err != nil {
+				mon.Close()
+				mon = nil
+				if ErrorStatus(err) == 404 {
+					log.L(bl.ctx).Errorf("monitor: event mode unsupported. %s", err.Error())
+				} else {
+					log.L(bl.ctx).Debugf("monitor: %s", err.Error())
+
+					select {
+					case <-bl.ctx.Done():
+						return
+					}
+				}
+				continue
+			}
+		}
+
 		// wait for new block headers
 		blockHead, err := mon.Recv(bl.ctx)
+		// reconnect on error unless context was cancelled
 		if err != nil {
-			log.L(bl.ctx).Error(err)
-			gapPotential = true
+			log.L(bl.ctx).Debugf("monitor: %s", err.Error())
+			mon.Close()
+			mon = nil
 
+			gapPotential = true
 			failCount++
 			continue
 		}
