@@ -109,7 +109,7 @@ func (c *tezosConnector) completeOp(ctx context.Context, op *codec.Op, fromStrin
 	nextCounter := nonce.Int64()
 	// Note: there are situations when a nonce becomes obsolete after assigning it to connector.NextNonceForSigner.
 	// In such cases, we update it with a more recent one.
-	if nextCounter <= state.Counter {
+	if nextCounter != state.Counter+1 {
 		nextCounter = state.Counter + 1
 	}
 	for _, op := range op.Contents {
