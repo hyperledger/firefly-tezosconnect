@@ -36,10 +36,8 @@ func (c *tezosConnector) TransactionSend(ctx context.Context, req *ffcapi.Transa
 	// simulate to check tx validity and estimate cost
 	sim, err := c.client.Simulate(ctx, op, opts)
 	if err != nil {
-		rpcErr := err.(rpc.RPCError)
-		return nil, mapError(sendRPCMethods, rpcErr), rpcErr
+		return nil, mapError(sendRPCMethods, err), err
 	}
-
 	// fail with Tezos error when simulation failed
 	if !sim.IsSuccess() {
 		return nil, "", sim.Error()
@@ -79,8 +77,7 @@ func (c *tezosConnector) TransactionSend(ctx context.Context, req *ffcapi.Transa
 	// broadcast
 	hash, err := c.client.Broadcast(ctx, op)
 	if err != nil {
-		rpcErr := err.(rpc.RPCError)
-		return nil, mapError(sendRPCMethods, rpcErr), rpcErr
+		return nil, mapError(sendRPCMethods, err), err
 	}
 
 	return &ffcapi.TransactionSendResponse{
