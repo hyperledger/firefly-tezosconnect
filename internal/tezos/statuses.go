@@ -13,7 +13,9 @@ func (c *tezosConnector) IsLive(_ context.Context) (*ffcapi.LiveResponse, ffcapi
 	}, "", nil
 }
 
-// IsReady confirms if the connector is connected to the downstream JSONRPC endpoint and therefore ready to receive traffic
+// IsReady confirms if the connector is ready to receive traffic
 func (c *tezosConnector) IsReady(ctx context.Context) (*ffcapi.ReadyResponse, ffcapi.ErrorReason, error) {
-	return nil, "", nil
+	return &ffcapi.ReadyResponse{
+		Ready: true,
+	}, "", nil
 }
