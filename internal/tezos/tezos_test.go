@@ -4,28 +4,27 @@ import (
 	"context"
 	"testing"
 
-	"github.com/OneOf-Inc/firefly-tezosconnect/mocks/rpcbackendmocks"
+	"github.com/OneOf-Inc/firefly-tezosconnect/mocks/tzrpcbackendmocks"
 	"github.com/hyperledger/firefly-common/pkg/config"
-	"github.com/hyperledger/firefly-common/pkg/ffresty"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
 func strPtr(s string) *string { return &s }
 
-func newTestConnector(t *testing.T) (context.Context, *tezosConnector, *rpcbackendmocks.Backend, func()) {
-	mRPC := &rpcbackendmocks.Backend{}
+func newTestConnector(t *testing.T) (context.Context, *tezosConnector, *tzrpcbackendmocks.RpcClient, func()) {
+	mRPC := &tzrpcbackendmocks.RpcClient{}
 	config.RootConfigReset()
 	conf := config.RootSection("unittest")
 	InitConfig(conf)
-	conf.Set(ffresty.HTTPConfigURL, "http://localhost:8545")
-	conf.Set(BlockPollingInterval, "1h") // Disable for tests that are not using it
 	logrus.SetLevel(logrus.DebugLevel)
 	ctx, done := context.WithCancel(context.Background())
 	cc, err := NewTezosConnector(ctx, conf)
 	assert.NoError(t, err)
 	c := cc.(*tezosConnector)
-	c.backend = mRPC
+	// TODO: tzgo returns client as a structure with a state.
+	// Define, how to mock it
+	// c.client = mRPC
 
 	return ctx, c, mRPC, func() {
 		done()

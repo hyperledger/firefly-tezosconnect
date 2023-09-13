@@ -69,6 +69,7 @@ func (c *tezosConnector) TransactionSend(ctx context.Context, req *ffcapi.Transa
 		}
 	}
 
+	// sign tx
 	err = c.signTxRemotely(ctx, op)
 	if err != nil {
 		return nil, "", err

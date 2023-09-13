@@ -12,17 +12,17 @@ import (
 func (c *tezosConnector) AddressBalance(ctx context.Context, req *ffcapi.AddressBalanceRequest) (*ffcapi.AddressBalanceResponse, ffcapi.ErrorReason, error) {
 	addr, err := tezos.ParseAddress(req.Address)
 	if err != nil {
-		return nil, "Invalid address", err
+		return nil, ffcapi.ErrorReasonInvalidInputs, err
 	}
 
 	headBlock, err := c.client.GetHeadBlock(ctx)
 	if err != nil {
-		return nil, "GetHeadBlock error", err
+		return nil, "", err
 	}
 
 	balance, err := c.client.GetContractBalance(ctx, addr, headBlock.Hash)
 	if err != nil {
-		return nil, "GetContractBalance error", err
+		return nil, "", err
 	}
 
 	return &ffcapi.AddressBalanceResponse{

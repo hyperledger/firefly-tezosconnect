@@ -73,11 +73,13 @@ func NewTezosConnector(ctx context.Context, conf config.Section) (cc ffcapi.API,
 	if rpcClientURL == "" {
 		return nil, i18n.WrapError(ctx, err, msgs.MsgMissingRpcUrl)
 	}
-	c.client, err = rpc.NewClient(conf.GetString(BlockchainRPC), nil)
+	c.client, err = rpc.NewClient(rpcClientURL, nil)
 	if err != nil {
 		return nil, i18n.WrapError(ctx, err, msgs.MsgFailedRpcInitialization)
 	}
 	c.networkName = conf.GetString(BlockchainNetwork)
+
+	// service for tx signing
 	c.signatoryURL = conf.GetString(BlockchainSignatory)
 
 	c.blockListener = newBlockListener(ctx, c, conf)
