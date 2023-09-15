@@ -30,6 +30,8 @@ func (c *tezosConnector) BlockInfoByNumber(ctx context.Context, req *ffcapi.Bloc
 
 func (c *tezosConnector) getBlockInfoByNumber(ctx context.Context, blockNumber int64, allowCache bool, expectedHashStr string) (*rpc.Block, ffcapi.ErrorReason, error) {
 	var blockInfo *rpc.Block
+	var err error
+
 	if allowCache {
 		cached, ok := c.blockCache.Get(strconv.FormatInt(blockNumber, 10))
 		if ok {
@@ -42,7 +44,7 @@ func (c *tezosConnector) getBlockInfoByNumber(ctx context.Context, blockNumber i
 	}
 
 	if blockInfo == nil {
-		blockInfo, err := c.client.GetBlock(ctx, fftypes.NewFFBigInt(blockNumber))
+		blockInfo, err = c.client.GetBlock(ctx, fftypes.NewFFBigInt(blockNumber))
 		if err != nil {
 			if mapError(blockRPCMethods, err) == ffcapi.ErrorReasonNotFound {
 				log.L(ctx).Debugf("Received error signifying 'block not found': '%s'", err.Error())
@@ -90,6 +92,9 @@ func (c *tezosConnector) getBlockInfoByHash(ctx context.Context, hashString stri
 		blockInfo, err = c.client.GetBlock(ctx, blockHash)
 		if err != nil {
 			return nil, err
+		}
+		if blockInfo == nil {
+			return nil, nil
 		}
 		c.addToBlockCache(blockInfo)
 	}
