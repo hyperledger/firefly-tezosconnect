@@ -2,10 +2,10 @@
 
 The following is the list of current maintainers this repo:
 
-| Name               | GitHub   | Email                               | LFID   |
-| ------------------ | -------- | ----------------------------------- | ------ |
-| Dzianis Andreyenka | awrichar | dzianis.andreyenka@instinctools.com |        |
-| Nicko Guyer        | nguyer   | nicko.guyer@kaleido.io              | nguyer |
+| Name               | GitHub         | Email                               | LFID   |
+| ------------------ | -------------- | ----------------------------------- | ------ |
+| Dzianis Andreyenka | denisandreenko | dzianis.andreyenka@instinctools.com | Darus  |
+| Nicko Guyer        | nguyer         | nicko.guyer@kaleido.io              | nguyer |
 
 This list is to be kept up to date as maintainers are added or removed.
 
