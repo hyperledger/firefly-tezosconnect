@@ -1,0 +1,35 @@
+run:
+  tests: false
+  skip-dirs:
+    - "mocks"
+linters-settings:
+  gocritic:
+    enabled-checks: []
+    disabled-checks:
+      - regexpMust
+linters:
+  disable-all: true
+  enable:
+    - bodyclose
+    - depguard
+    - dogsled
+    - errcheck
+    - goconst
+    - gocritic
+    - gocyclo
+    - gofmt
+    - goimports
+    - goprintffuncname
+    - gosec
+    - gosimple
+    - govet
+    - ineffassign
+    - misspell
+    - nakedret
+    - revive
+    - staticcheck
+    - stylecheck
+    - typecheck
+    - unconvert
+    - unparam
+    - unused

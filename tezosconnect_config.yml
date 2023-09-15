@@ -1,0 +1,23 @@
+log:
+  level: debug
+connector:
+  blockchain:
+    rpc: https://rpc.ghost.tzstats.com
+    network: ghostnet
+    signatory: http://127.0.0.1:6732
+persistence:
+  leveldb:
+    path: ./.leveldb
+ffcore:
+  url: http://127.0.0.1:5101
+  namespaces:
+    - tezos
+confirmations:
+  required: 0
+transactions:
+  handler:
+    name: simple
+    simple:
+      fixedGasPrice: 0
+      gasOracle:
+        mode: fixed
