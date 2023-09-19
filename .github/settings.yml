@@ -1,12 +1,17 @@
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
 repository:
   name: firefly-tezosconnect
+  description: Firefly Tezos Connect
+  homepage: https://github.com/hyperledger/firefly-tezosconnect
   default_branch: main
-  has_downloads: false
+  has_downloads: true
   has_issues: true
   has_projects: true
-  has_wiki: false
+  has_wiki: true
   archived: false
   private: false
-  allow_squash_merge: false
-  allow_merge_commit: false
-  allow_rebase_merge: true
+  allow_squash_merge: true
+  allow_merge_commit: true
