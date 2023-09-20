@@ -1,3 +1,6 @@
+[![codecov](https://codecov.io/gh/hyperledger/firefly-tezosconnect/branch/main/graph/badge.svg)](https://codecov.io/gh/hyperledger/firefly-tezosconnect)
+[![Go Reference](https://pkg.go.dev/badge/github.com/hyperledger/firefly-tezosconnect.svg)](https://pkg.go.dev/github.com/hyperledger/firefly-tezosconnect)
+
 # Hyperledger FireFly Tezos Connector
 
 This repo provides a reference implementation of the FireFly Connector API (FFCAPI)
