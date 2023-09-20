@@ -31,7 +31,7 @@ type tezosConnector struct {
 	blockListener              *blockListener
 	eventFilterPollingInterval time.Duration
 
-	client       *rpc.Client
+	client       rpc.RpcClient
 	networkName  string
 	signatoryURL string
 

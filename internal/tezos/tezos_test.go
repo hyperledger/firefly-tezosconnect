@@ -22,9 +22,7 @@ func newTestConnector(t *testing.T) (context.Context, *tezosConnector, *tzrpcbac
 	cc, err := NewTezosConnector(ctx, conf)
 	assert.NoError(t, err)
 	c := cc.(*tezosConnector)
-	// TODO: tzgo returns client as a structure with a state.
-	// Define, how to mock it
-	// c.client = mRPC
+	c.client = mRPC
 
 	return ctx, c, mRPC, func() {
 		done()
