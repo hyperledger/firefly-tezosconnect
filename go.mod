@@ -1,12 +1,11 @@
 module github.com/hyperledger/firefly-tezosconnect
 
-go 1.19
+go 1.20
 
 require (
 	blockwatch.cc/tzgo v1.17.1
 	github.com/hashicorp/golang-lru v0.5.4
 	github.com/hyperledger/firefly-common v1.2.18
-	github.com/hyperledger/firefly-signer v1.1.9
 	github.com/hyperledger/firefly-transaction-manager v1.3.0
 	github.com/sirupsen/logrus v1.9.2
 	github.com/spf13/cobra v1.6.1
