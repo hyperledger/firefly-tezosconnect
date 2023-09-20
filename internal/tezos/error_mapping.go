@@ -27,8 +27,7 @@ func mapError(methodType tezosRPCMethodCategory, err error) ffcapi.ErrorReason {
 			return ffcapi.ErrorReasonNotFound
 		}
 	case sendRPCMethods:
-		switch {
-		case strings.Contains(errString, "counter_in_the_past"):
+		if strings.Contains(errString, "counter_in_the_past") {
 			return ffcapi.ErrorReasonNonceTooLow
 		}
 	}

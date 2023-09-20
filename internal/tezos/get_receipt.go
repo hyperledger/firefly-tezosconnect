@@ -36,7 +36,7 @@ func (c *tezosConnector) TransactionReceipt(ctx context.Context, req *ffcapi.Tra
 	mon.Listen(rpcClient)
 
 	// wait for confirmations
-	res := rpc.NewResult(tezos.MustParseOpHash(req.TransactionHash)) //.WithTTL(op.TTL).WithConfirmations(opts.Confirmations)
+	res := rpc.NewResult(tezos.MustParseOpHash(req.TransactionHash)) // .WithTTL(op.TTL).WithConfirmations(opts.Confirmations)
 	res.Listen(mon)
 	res.WaitContext(ctx)
 	if err := res.Err(); err != nil {
@@ -72,8 +72,7 @@ func (c *tezosConnector) TransactionReceipt(ctx context.Context, req *ffcapi.Tra
 		operationReceipts := make([]receiptExtraInfo, len(receipt.Op.Contents))
 
 		for _, o := range receipt.Op.Contents {
-			switch o.Kind() {
-			case tezos.OpTypeTransaction:
+			if o.Kind() == tezos.OpTypeTransaction {
 				tx := o.(*rpc.Transaction)
 
 				txStatus := tx.Result().Status.String()
@@ -121,7 +120,7 @@ func (c *tezosConnector) TransactionReceipt(ctx context.Context, req *ffcapi.Tra
 				}
 
 				operationReceipts = append(operationReceipts, extraInfo)
-				fullReceipt, _ = json.Marshal(&extraInfo)
+				fullReceipt, _ = json.Marshal(operationReceipts)
 			}
 		}
 

@@ -7,7 +7,7 @@ import (
 	"github.com/hyperledger/firefly-transaction-manager/pkg/ffcapi"
 )
 
-func (t *tezosConnector) GasEstimate(ctx context.Context, transaction *ffcapi.TransactionInput) (*ffcapi.GasEstimateResponse, ffcapi.ErrorReason, error) {
+func (c *tezosConnector) GasEstimate(_ context.Context, _ *ffcapi.TransactionInput) (*ffcapi.GasEstimateResponse, ffcapi.ErrorReason, error) {
 	// TODO: implement
-	return nil, ffcapi.ErrorReason("Not implemented"), errors.New("Not implemented")
+	return nil, ffcapi.ErrorReason("not implemented"), errors.New("not implemented")
 }

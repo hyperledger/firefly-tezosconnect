@@ -2,7 +2,6 @@ package tezos
 
 import (
 	"context"
-	"math/big"
 	"sync"
 	"time"
 
@@ -13,16 +12,11 @@ import (
 	"github.com/hyperledger/firefly-common/pkg/i18n"
 	"github.com/hyperledger/firefly-common/pkg/log"
 	"github.com/hyperledger/firefly-common/pkg/retry"
-	"github.com/hyperledger/firefly-signer/pkg/abi"
-	"github.com/hyperledger/firefly-signer/pkg/rpcbackend"
 	"github.com/hyperledger/firefly-tezosconnect/internal/msgs"
 	"github.com/hyperledger/firefly-transaction-manager/pkg/ffcapi"
 )
 
 type tezosConnector struct {
-	backend                    rpcbackend.Backend
-	serializer                 *abi.Serializer
-	gasEstimationFactor        *big.Float
 	catchupPageSize            int64
 	catchupThreshold           int64
 	checkpointBlockGap         int64
@@ -71,11 +65,11 @@ func NewTezosConnector(ctx context.Context, conf config.Section) (cc ffcapi.API,
 
 	rpcClientURL := conf.GetString(BlockchainRPC)
 	if rpcClientURL == "" {
-		return nil, i18n.WrapError(ctx, err, msgs.MsgMissingRpcUrl)
+		return nil, i18n.WrapError(ctx, err, msgs.MsgMissingRPCUrl)
 	}
 	c.client, err = rpc.NewClient(rpcClientURL, nil)
 	if err != nil {
-		return nil, i18n.WrapError(ctx, err, msgs.MsgFailedRpcInitialization)
+		return nil, i18n.WrapError(ctx, err, msgs.MsgFailedRPCInitialization)
 	}
 	c.networkName = conf.GetString(BlockchainNetwork)
 

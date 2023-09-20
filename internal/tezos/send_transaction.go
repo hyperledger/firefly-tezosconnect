@@ -29,7 +29,10 @@ func (c *tezosConnector) TransactionSend(ctx context.Context, req *ffcapi.Transa
 	}
 
 	// auto-complete op with branch, source, nonce, chain params
-	c.completeOp(ctx, op, req.From, req.Nonce)
+	err = c.completeOp(ctx, op, req.From, req.Nonce)
+	if err != nil {
+		return nil, "", err
+	}
 
 	opts := &rpc.DefaultOptions
 
@@ -110,16 +113,16 @@ func (c *tezosConnector) signTxRemotely(ctx context.Context, op *codec.Op) error
 		return err
 	}
 
-	var signatureJson struct {
+	var signatureJSON struct {
 		Signature string
 	}
-	err = json.Unmarshal(body, &signatureJson)
+	err = json.Unmarshal(body, &signatureJSON)
 	if err != nil {
 		return err
 	}
 
 	var sig tezos.Signature
-	err = sig.UnmarshalText([]byte(signatureJson.Signature))
+	err = sig.UnmarshalText([]byte(signatureJSON.Signature))
 	if err != nil {
 		return err
 	}

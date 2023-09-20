@@ -14,7 +14,7 @@ func (c *tezosConnector) IsLive(_ context.Context) (*ffcapi.LiveResponse, ffcapi
 }
 
 // IsReady confirms if the connector is ready to receive traffic
-func (c *tezosConnector) IsReady(ctx context.Context) (*ffcapi.ReadyResponse, ffcapi.ErrorReason, error) {
+func (c *tezosConnector) IsReady(_ context.Context) (*ffcapi.ReadyResponse, ffcapi.ErrorReason, error) {
 	return &ffcapi.ReadyResponse{
 		Ready: true,
 	}, "", nil
