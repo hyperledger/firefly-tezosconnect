@@ -17,7 +17,7 @@ lint: ${LINT}
 ${MOCKERY}:
 		$(VGO) install github.com/vektra/mockery/v2@v2.23.2
 ${LINT}:
-		$(VGO) install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.47.3
+		$(VGO) install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.54.2
 mockpaths:
 		$(eval FFTM_PATH := $(shell $(VGO) list -f '{{.Dir}}' github.com/hyperledger/firefly-transaction-manager/pkg/fftm))
 		$(eval TEZOS_CLIENT_PATH := $(shell $(VGO) list -f '{{.Dir}}' blockwatch.cc/tzgo/rpc))

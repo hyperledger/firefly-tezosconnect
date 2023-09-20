@@ -66,7 +66,10 @@ func (c *tezosConnector) buildOp(ctx context.Context, params micheline.Parameter
 	txArgs.WithDestination(toAddress)
 	op.WithContents(txArgs.Encode())
 
-	c.completeOp(ctx, op, fromString, nonce)
+	err = c.completeOp(ctx, op, fromString, nonce)
+	if err != nil {
+		return nil, err
+	}
 
 	return op, nil
 }
@@ -157,15 +160,15 @@ func (c *tezosConnector) getPubKeyFromSignatory(tezosAddress string) (*tezos.Key
 		return nil, err
 	}
 
-	var pubKeyJson struct {
+	var pubKeyJSON struct {
 		PubKey string `json:"public_key"`
 	}
-	err = json.Unmarshal(body, &pubKeyJson)
+	err = json.Unmarshal(body, &pubKeyJSON)
 	if err != nil {
 		return nil, err
 	}
 
-	key, err := tezos.ParseKey(pubKeyJson.PubKey)
+	key, err := tezos.ParseKey(pubKeyJSON.PubKey)
 	if err != nil {
 		return nil, err
 	}
