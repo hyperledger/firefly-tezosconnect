@@ -1,3 +1,3 @@
 # Changelog
 
-See [Hyperledger FireFly Releases](https://github.com/hyperledger/firefly/releases)
+See [FireFly Tezos Connector Releases](https://github.com/hyperledger/firefly-tezosconnect/releases)

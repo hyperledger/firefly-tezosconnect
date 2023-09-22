@@ -17,7 +17,3 @@ confirmations:
 transactions:
   handler:
     name: simple
-    simple:
-      fixedGasPrice: 0
-      gasOracle:
-        mode: fixed
