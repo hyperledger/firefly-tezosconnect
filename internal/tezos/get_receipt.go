@@ -69,7 +69,7 @@ func (c *tezosConnector) TransactionReceipt(ctx context.Context, req *ffcapi.Tra
 
 	if receipt.Op != nil {
 		var fullReceipt []byte
-		operationReceipts := make([]receiptExtraInfo, len(receipt.Op.Contents))
+		operationReceipts := make([]receiptExtraInfo, 0, len(receipt.Op.Contents))
 
 		for _, o := range receipt.Op.Contents {
 			if o.Kind() == tezos.OpTypeTransaction {
