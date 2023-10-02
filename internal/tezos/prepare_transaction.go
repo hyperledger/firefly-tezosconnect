@@ -29,7 +29,7 @@ func (c *tezosConnector) TransactionPrepare(ctx context.Context, req *ffcapi.Tra
 
 	op, err := c.buildOp(ctx, params, req.From, req.To, req.Nonce)
 	if err != nil {
-		return nil, ffcapi.ErrorReasonInvalidInputs, err
+		return nil, "", err
 	}
 
 	return &ffcapi.TransactionPrepareResponse{
@@ -116,10 +116,6 @@ func (c *tezosConnector) completeOp(ctx context.Context, op *codec.Op, fromStrin
 		nextCounter = state.Counter + 1
 	}
 	for _, op := range op.Contents {
-		// skip non-manager ops
-		if op.GetCounter() < 0 {
-			continue
-		}
 		op.WithCounter(nextCounter)
 		nextCounter++
 	}
