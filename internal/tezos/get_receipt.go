@@ -3,6 +3,7 @@ package tezos
 import (
 	"context"
 	"encoding/json"
+	"errors"
 
 	"blockwatch.cc/tzgo/micheline"
 	"blockwatch.cc/tzgo/rpc"
@@ -24,7 +25,6 @@ type receiptExtraInfo struct {
 	Counter             *fftypes.FFBigInt `json:"counter"`
 	Fee                 *fftypes.FFBigInt `json:"fee"`
 	Status              *string           `json:"status"`
-	ErrorMessage        *string           `json:"errorMessage"`
 	Storage             *fftypes.JSONAny  `json:"storage"`
 }
 
@@ -100,20 +100,22 @@ func (c *tezosConnector) TransactionReceipt(ctx context.Context, req *ffcapi.Tra
 					script, err = c.client.GetContractScript(ctx, tx.Destination)
 					if err != nil {
 						log.L(ctx).Error("error getting contract script: ", err)
+						return nil, "", err
 					}
 				}
 				if len(tx.Result().Errors) > 0 {
-					errorMessage := ""
+					var errs error
 					for _, err := range tx.Result().Errors {
-						errorMessage += err.Error()
+						errs = errors.Join(errs, err)
 					}
-					extraInfo.ErrorMessage = &errorMessage
+					return nil, "", err
 				}
 				if prim := tx.Metadata.Result.Storage; prim != nil {
 					val := micheline.NewValue(script.StorageType(), *prim)
 					m, err := val.Map()
 					if err != nil {
 						log.L(ctx).Error("error parsing contract storage: ", err)
+						return nil, "", err
 					}
 					storageBytes, _ := json.Marshal(m)
 					extraInfo.Storage = fftypes.JSONAnyPtrBytes(storageBytes)
