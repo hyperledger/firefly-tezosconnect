@@ -91,8 +91,9 @@ func (c *tezosConnector) completeOp(ctx context.Context, op *codec.Op, fromStrin
 		return err
 	}
 
+	mayNeedReveal := len(op.Contents) > 0 && op.Contents[0].Kind() != tezos.OpTypeReveal
 	// add reveal if necessary
-	if !state.IsRevealed() {
+	if mayNeedReveal && !state.IsRevealed() {
 		key, err := c.getPubKeyFromSignatory(op.Source.String())
 		if err != nil {
 			return err
