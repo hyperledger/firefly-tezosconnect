@@ -1,3 +1,4 @@
+![build](https://github.com/hyperledger/firefly-tezosconnect/actions/workflows/go.yml/badge.svg?branch=main)
 [![codecov](https://codecov.io/gh/hyperledger/firefly-tezosconnect/branch/main/graph/badge.svg)](https://codecov.io/gh/hyperledger/firefly-tezosconnect)
 [![Go Reference](https://pkg.go.dev/badge/github.com/hyperledger/firefly-tezosconnect.svg)](https://pkg.go.dev/github.com/hyperledger/firefly-tezosconnect)
 
