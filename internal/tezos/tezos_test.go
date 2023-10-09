@@ -48,6 +48,10 @@ func TestConnectorInit(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, int64(500), cc.(*tezosConnector).catchupThreshold) // set to page size
 
+	conf.Set(BlockchainRPC, "wrong rpc")
+	cc, err = NewTezosConnector(context.Background(), conf)
+	assert.Regexp(t, "FF23052", err)
+
 	conf.Set(ConfigDataFormat, "map")
 	conf.Set(BlockCacheSize, "-1")
 	cc, err = NewTezosConnector(context.Background(), conf)
