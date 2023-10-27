@@ -2,6 +2,8 @@ package tezos
 
 import (
 	"errors"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"blockwatch.cc/tzgo/tezos"
@@ -9,6 +11,61 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
+
+func TestTransactionSendSuccess(t *testing.T) {
+	// Set up tezos connector mocks
+	ctx, c, mRPC, done := newTestConnector(t)
+	defer done()
+
+	// Set up signatory mocks
+	svr := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("{\"signature\":\"sigWetzF5zVM2qdYt8QToj7e5cNBm9neiPRc3rpePBDrr8N1brFbErv2YfXMSoSgemJ8AwZcLfmkBDg78bmUEzF1sf1YotnS\"}"))
+	}))
+	defer svr.Close()
+	c.signatoryURL = svr.URL
+
+	mRPC.On("GetBlockHash", ctx, mock.Anything).
+		Return(tezos.NewBlockHash([]byte("BMBeYrMJpLWrqCs7UTcFaUQCeWBqsjCLejX5D8zE8m9syHqHnZg")), nil)
+
+	mRPC.On("GetContractExt", ctx, mock.Anything, mock.Anything).
+		Return(&rpc.ContractInfo{
+			Counter: 10,
+			Manager: "edpkv89Jj4aVWetK69CWm5ss1LayvK8dQoiFz7p995y1k3E8CZwqJ6",
+		}, nil)
+
+	mRPC.On("Simulate", ctx, mock.Anything, mock.Anything).
+		Return(&rpc.Receipt{
+			Op: &rpc.Operation{
+				Contents: []rpc.TypedOperation{
+					rpc.Transaction{
+						Manager: rpc.Manager{
+							Generic: rpc.Generic{
+								Metadata: rpc.OperationMetadata{
+									Result: rpc.OperationResult{
+										Status: tezos.OpStatusApplied,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		}, nil)
+
+	mRPC.On("Broadcast", ctx, mock.Anything).
+		Return(tezos.OpHash([]byte("oovD5cUigLGLT6kGDqsLMyF2sc3MLyfYhJWRymCPxUKEx3vtQ5v")), nil)
+
+	req := &ffcapi.TransactionSendRequest{
+		TransactionHeaders: ffcapi.TransactionHeaders{
+			From: "tz1Y6GnVhC4EpcDDSmD3ibcC4WX6DJ4Q1QLN",
+			To:   "KT1D254HTPKq5GZNVcF73XBinG9BLybHqu8s",
+		},
+		TransactionData: "424d426559724d4a704c577271437337555463466155514365574271736a434c6c00889816a17ae688c971be1ad34bfe1990f8fa5e0f000b0000000130a980e6e41028da2cacfca4ddefea252d18bed900ffff05706175736500000002030a",
+	}
+	resp, _, err := c.TransactionSend(ctx, req)
+	assert.Nil(t, err)
+	assert.NotNil(t, resp)
+}
 
 func TestTransactionSendDecodeStrError(t *testing.T) {
 	ctx, c, _, done := newTestConnector(t)
