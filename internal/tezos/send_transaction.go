@@ -49,6 +49,7 @@ func (c *tezosConnector) TransactionSend(ctx context.Context, req *ffcapi.Transa
 	}, "", nil
 }
 
+
 func (c *tezosConnector) signTxRemotely(_ context.Context, op *codec.Op) error {
 	url := c.signatoryURL + "/keys/" + op.Source.String()
 	requestBody, _ := json.Marshal(hex.EncodeToString(op.WatermarkedBytes()))

@@ -115,10 +115,8 @@ func (bl *blockListener) listenLoop() {
 				} else {
 					log.L(bl.ctx).Debugf("monitor: %s", err.Error())
 
-					select {
-					case <-bl.ctx.Done():
-						return
-					}
+					<-bl.ctx.Done()
+					return
 				}
 				continue
 			}
