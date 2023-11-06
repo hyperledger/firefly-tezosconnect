@@ -10,9 +10,7 @@ import (
 	"net/http"
 
 	"blockwatch.cc/tzgo/codec"
-	"blockwatch.cc/tzgo/rpc"
 	"blockwatch.cc/tzgo/tezos"
-	"github.com/hyperledger/firefly-common/pkg/log"
 	"github.com/hyperledger/firefly-transaction-manager/pkg/ffcapi"
 )
 
@@ -34,44 +32,6 @@ func (c *tezosConnector) TransactionSend(ctx context.Context, req *ffcapi.Transa
 		return nil, "", err
 	}
 
-	opts := &rpc.DefaultOptions
-
-	// simulate to check tx validity and estimate cost
-	sim, err := c.client.Simulate(ctx, op, opts)
-	if err != nil {
-		return nil, mapError(sendRPCMethods, err), err
-	}
-	// fail with Tezos error when simulation failed
-	if !sim.IsSuccess() {
-		return nil, "", sim.Error()
-	}
-
-	// apply simulated cost as limits to tx list
-	if !opts.IgnoreLimits {
-		op.WithLimits(sim.MinLimits(), rpc.ExtraSafetyMargin)
-	}
-
-	// log info about tx costs
-	costs := sim.Costs()
-	for i, v := range op.Contents {
-		verb := "used"
-		if opts.IgnoreLimits {
-			verb = "forced"
-		}
-		limits := v.Limits()
-		log.L(ctx).Debugf("OP#%03d: %s gas_used(sim)=%d storage_used(sim)=%d storage_burn(sim)=%d alloc_burn(sim)=%d fee(%s)=%d gas_limit(%s)=%d storage_limit(%s)=%d ",
-			i, v.Kind(), costs[i].GasUsed, costs[i].StorageUsed, costs[i].StorageBurn, costs[i].AllocationBurn,
-			verb, limits.Fee, verb, limits.GasLimit, verb, limits.StorageLimit,
-		)
-	}
-
-	// check minFee calc against maxFee if set
-	if opts.MaxFee > 0 {
-		if l := op.Limits(); l.Fee > opts.MaxFee {
-			return nil, "", fmt.Errorf("estimated cost %d > max %d", l.Fee, opts.MaxFee)
-		}
-	}
-
 	// sign tx
 	err = c.signTxRemotely(ctx, op)
 	if err != nil {
@@ -89,8 +49,7 @@ func (c *tezosConnector) TransactionSend(ctx context.Context, req *ffcapi.Transa
 	}, "", nil
 }
 
-// nolint:unparam
-func (c *tezosConnector) signTxRemotely(ctx context.Context, op *codec.Op) error {
+func (c *tezosConnector) signTxRemotely(_ context.Context, op *codec.Op) error {
 	url := c.signatoryURL + "/keys/" + op.Source.String()
 	requestBody, _ := json.Marshal(hex.EncodeToString(op.WatermarkedBytes()))
 
