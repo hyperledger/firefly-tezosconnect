@@ -11,6 +11,7 @@ type tezosRPCMethodCategory int
 
 const (
 	blockRPCMethods tezosRPCMethodCategory = iota
+	callRPCMethods
 	sendRPCMethods
 )
 
@@ -25,6 +26,10 @@ func mapError(methodType tezosRPCMethodCategory, err error) ffcapi.ErrorReason {
 	case blockRPCMethods:
 		if strings.Contains(errString, "status 404") {
 			return ffcapi.ErrorReasonNotFound
+		}
+	case callRPCMethods:
+		if strings.Contains(errString, "script_rejected") {
+			return ffcapi.ErrorReasonTransactionReverted
 		}
 	case sendRPCMethods:
 		if strings.Contains(errString, "counter_in_the_past") {

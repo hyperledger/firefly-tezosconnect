@@ -16,12 +16,13 @@ import (
 	"blockwatch.cc/tzgo/tezos"
 	"github.com/hyperledger/firefly-common/pkg/fftypes"
 	"github.com/hyperledger/firefly-common/pkg/i18n"
+	"github.com/hyperledger/firefly-common/pkg/log"
 	"github.com/hyperledger/firefly-tezosconnect/internal/msgs"
 	"github.com/hyperledger/firefly-transaction-manager/pkg/ffcapi"
 )
 
 // TransactionPrepare validates transaction inputs against the supplied schema/Michelson and performs any binary serialization required (prior to signing) to encode a transaction from JSON into the native blockchain format
-func (c *tezosConnector) TransactionPrepare(ctx context.Context, req *ffcapi.TransactionPrepareRequest) (*ffcapi.TransactionPrepareResponse, ffcapi.ErrorReason, error) {
+func (c *tezosConnector) TransactionPrepare(ctx context.Context, req *ffcapi.TransactionPrepareRequest) (res *ffcapi.TransactionPrepareResponse, reason ffcapi.ErrorReason, err error) {
 	params, err := c.prepareInputParams(ctx, &req.TransactionInput)
 	if err != nil {
 		return nil, ffcapi.ErrorReasonInvalidInputs, err
@@ -32,10 +33,52 @@ func (c *tezosConnector) TransactionPrepare(ctx context.Context, req *ffcapi.Tra
 		return nil, "", err
 	}
 
+	opts := &rpc.DefaultOptions
+	if reason, err = c.estimateAndAssignTxCost(ctx, op, opts); err != nil {
+		return nil, reason, err
+	}
+	log.L(ctx).Infof("Prepared transaction method=%s dataLen=%d", req.Method.String(), len(op.Bytes()))
+
 	return &ffcapi.TransactionPrepareResponse{
 		Gas:             req.Gas,
 		TransactionData: hex.EncodeToString(op.Bytes()),
 	}, "", nil
+}
+
+func (c *tezosConnector) estimateAndAssignTxCost(ctx context.Context, op *codec.Op, opts *rpc.CallOptions) (ffcapi.ErrorReason, error) {
+	// Simulate the transaction (dry run)
+	sim, reason, err := c.callTransaction(ctx, op, nil)
+	if err != nil {
+		return reason, err
+	}
+
+	// apply simulated cost as limits to tx list
+	if !opts.IgnoreLimits {
+		op.WithLimits(sim.MinLimits(), rpc.ExtraSafetyMargin)
+	}
+
+	// log info about tx costs
+	costs := sim.Costs()
+	for i, v := range op.Contents {
+		verb := "used"
+		if opts.IgnoreLimits {
+			verb = "forced"
+		}
+		limits := v.Limits()
+		log.L(ctx).Debugf("OP#%03d: %s gas_used(sim)=%d storage_used(sim)=%d storage_burn(sim)=%d alloc_burn(sim)=%d fee(%s)=%d gas_limit(%s)=%d storage_limit(%s)=%d ",
+			i, v.Kind(), costs[i].GasUsed, costs[i].StorageUsed, costs[i].StorageBurn, costs[i].AllocationBurn,
+			verb, limits.Fee, verb, limits.GasLimit, verb, limits.StorageLimit,
+		)
+	}
+
+	// check minFee calc against maxFee if set
+	if opts.MaxFee > 0 {
+		if l := op.Limits(); l.Fee > opts.MaxFee {
+			return "", fmt.Errorf("estimated cost %d > max %d", l.Fee, opts.MaxFee)
+		}
+	}
+
+	return "", nil
 }
 
 func (c *tezosConnector) prepareInputParams(ctx context.Context, req *ffcapi.TransactionInput) (micheline.Parameters, error) {
