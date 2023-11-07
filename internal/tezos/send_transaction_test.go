@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"blockwatch.cc/tzgo/rpc"
 	"blockwatch.cc/tzgo/tezos"
 	"github.com/hyperledger/firefly-transaction-manager/pkg/ffcapi"
 	"github.com/stretchr/testify/assert"
@@ -31,25 +32,6 @@ func TestTransactionSendSuccess(t *testing.T) {
 		Return(&rpc.ContractInfo{
 			Counter: 10,
 			Manager: "edpkv89Jj4aVWetK69CWm5ss1LayvK8dQoiFz7p995y1k3E8CZwqJ6",
-		}, nil)
-
-	mRPC.On("Simulate", ctx, mock.Anything, mock.Anything).
-		Return(&rpc.Receipt{
-			Op: &rpc.Operation{
-				Contents: []rpc.TypedOperation{
-					rpc.Transaction{
-						Manager: rpc.Manager{
-							Generic: rpc.Generic{
-								Metadata: rpc.OperationMetadata{
-									Result: rpc.OperationResult{
-										Status: tezos.OpStatusApplied,
-									},
-								},
-							},
-						},
-					},
-				},
-			},
 		}, nil)
 
 	mRPC.On("Broadcast", ctx, mock.Anything).
