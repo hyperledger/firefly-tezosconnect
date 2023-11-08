@@ -16,9 +16,7 @@ func TestRetryDelay(t *testing.T) {
 	c.retry.InitialDelay = 1 * time.Microsecond
 
 	ctx, cancel := context.WithCancel(context.Background())
-	go func() {
-		cancel()
-	}()
+	cancel()
 
 	testCases := []struct {
 		name         string

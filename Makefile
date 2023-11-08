@@ -8,7 +8,7 @@ MOCKERY := $(GOBIN)/mockery
 
 all: build test go-mod-tidy
 test: deps
-		$(VGO) test ./internal/... ./cmd/... -cover -coverprofile=coverage.txt -covermode=atomic -timeout=30s
+		$(VGO) test ./internal/... ./cmd/... -v -short -cover -coverprofile=coverage.txt -covermode=atomic -timeout=30s
 coverage.html:
 		$(VGO) tool cover -html=coverage.txt
 coverage: test coverage.html
