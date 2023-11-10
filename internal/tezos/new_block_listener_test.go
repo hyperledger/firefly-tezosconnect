@@ -2,6 +2,7 @@ package tezos
 
 import (
 	"testing"
+	"time"
 
 	"blockwatch.cc/tzgo/rpc"
 	"blockwatch.cc/tzgo/tezos"
@@ -11,7 +12,7 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-func TestNewBlockListenerOK(t *testing.T) {
+func TestNewBlockListenerOKWithDelay(t *testing.T) {
 	ctx, c, mRPC, done := newTestConnector(t)
 	defer done()
 
@@ -24,13 +25,17 @@ func TestNewBlockListenerOK(t *testing.T) {
 				Level:       12345,
 			},
 		}, nil).Maybe()
+	mRPC.On("MonitorBlockHeader", mock.Anything, mock.Anything).Return(nil)
 
 	req := &ffcapi.NewBlockListenerRequest{
 		ID:              fftypes.NewUUID(),
 		ListenerContext: ctx,
 		BlockListener:   make(chan<- *ffcapi.BlockHashEvent),
 	}
+
 	res, _, err := c.NewBlockListener(ctx, req)
+
+	time.Sleep(1 * time.Second)
 	assert.NoError(t, err)
 	assert.NotNil(t, res)
 }
