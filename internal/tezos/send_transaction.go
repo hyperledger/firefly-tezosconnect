@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -49,11 +50,14 @@ func (c *tezosConnector) TransactionSend(ctx context.Context, req *ffcapi.Transa
 	}, "", nil
 }
 
-func (c *tezosConnector) signTxRemotely(_ context.Context, op *codec.Op) error {
+func (c *tezosConnector) signTxRemotely(ctx context.Context, op *codec.Op) error {
+	if op == nil {
+		return errors.New("operation is empty")
+	}
 	url := c.signatoryURL + "/keys/" + op.Source.String()
 	requestBody, _ := json.Marshal(hex.EncodeToString(op.WatermarkedBytes()))
 
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(requestBody))
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(requestBody))
 	if err != nil {
 		return err
 	}
@@ -68,10 +72,7 @@ func (c *tezosConnector) signTxRemotely(_ context.Context, op *codec.Op) error {
 	}
 	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
+	body, _ := io.ReadAll(resp.Body)
 
 	var signatureJSON struct {
 		Signature string

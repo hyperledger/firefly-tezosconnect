@@ -137,7 +137,7 @@ func (c *tezosConnector) completeOp(ctx context.Context, op *codec.Op, fromStrin
 	mayNeedReveal := len(op.Contents) > 0 && op.Contents[0].Kind() != tezos.OpTypeReveal
 	// add reveal if necessary
 	if mayNeedReveal && !state.IsRevealed() {
-		key, err := c.getPubKeyFromSignatory(op.Source.String())
+		key, err := c.getPubKeyFromSignatory(ctx, op.Source.String())
 		if err != nil {
 			return err
 		}
@@ -178,9 +178,9 @@ func getNetworkParamsByName(name string) *tezos.Params {
 	}
 }
 
-func (c *tezosConnector) getPubKeyFromSignatory(tezosAddress string) (*tezos.Key, error) {
+func (c *tezosConnector) getPubKeyFromSignatory(ctx context.Context, tezosAddress string) (*tezos.Key, error) {
 	url := c.signatoryURL + "/keys/" + tezosAddress
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -195,10 +195,7 @@ func (c *tezosConnector) getPubKeyFromSignatory(tezosAddress string) (*tezos.Key
 	}
 	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
+	body, _ := io.ReadAll(resp.Body)
 
 	var pubKeyJSON struct {
 		PubKey string `json:"public_key"`
