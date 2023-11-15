@@ -32,12 +32,11 @@ type receiptExtraInfo struct {
 func (c *tezosConnector) TransactionReceipt(ctx context.Context, req *ffcapi.TransactionReceiptRequest) (*ffcapi.TransactionReceiptResponse, ffcapi.ErrorReason, error) {
 	// ensure block observer is running
 	rpcClient := c.client.(*rpc.Client)
-	mon := rpcClient.BlockObserver
-	mon.Listen(rpcClient)
+	rpcClient.Listen()
 
 	// wait for confirmations
 	res := rpc.NewResult(tezos.MustParseOpHash(req.TransactionHash)) // .WithTTL(op.TTL).WithConfirmations(opts.Confirmations)
-	res.Listen(mon)
+	res.Listen(rpcClient.BlockObserver)
 	res.WaitContext(ctx)
 	if err := res.Err(); err != nil {
 		return nil, "", err
