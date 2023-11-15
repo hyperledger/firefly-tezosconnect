@@ -38,7 +38,6 @@ func versionCommand() *cobra.Command {
 		Short: "Prints the version info",
 		Long:  "",
 		RunE: func(cmd *cobra.Command, args []string) error {
-
 			info := &Info{
 				Version: BuildVersionOverride,
 				Date:    BuildDate,
@@ -46,7 +45,7 @@ func versionCommand() *cobra.Command {
 				License: "Apache-2.0",
 			}
 
-			// Where you are using go install, we will get good version information usefully from Go
+			// When we are using go install, we will get version information from Go
 			// When we're in go-releaser in a Github action, we will have the version passed in explicitly
 			if info.Version == "" {
 				buildInfo, ok := debug.ReadBuildInfo()
@@ -54,7 +53,7 @@ func versionCommand() *cobra.Command {
 			}
 
 			if shortened {
-				fmt.Println(info.Version)
+				fmt.Printf("Version: %s", info.Version)
 			} else {
 				var (
 					bytes []byte
@@ -74,7 +73,7 @@ func versionCommand() *cobra.Command {
 					return err
 				}
 
-				fmt.Println(string(bytes))
+				fmt.Printf("Build info: %s", string(bytes))
 			}
 
 			return nil
