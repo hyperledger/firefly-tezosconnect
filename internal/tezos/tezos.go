@@ -80,13 +80,3 @@ func NewTezosConnector(ctx context.Context, conf config.Section) (cc ffcapi.API,
 
 	return c, nil
 }
-
-// WaitClosed can be called after cancelling all the contexts, to wait for everything to close down
-func (c *tezosConnector) WaitClosed() {
-	if c.blockListener != nil {
-		c.blockListener.waitClosed()
-	}
-	for _, s := range c.eventStreams {
-		<-s.streamLoopDone
-	}
-}

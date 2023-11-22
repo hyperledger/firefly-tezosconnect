@@ -409,12 +409,3 @@ func (bl *blockListener) getHighestBlock(ctx context.Context) int64 {
 	log.L(ctx).Debugf("ChainHead=%d", highestBlock)
 	return highestBlock
 }
-
-func (bl *blockListener) waitClosed() {
-	bl.mux.Lock()
-	listenLoopDone := bl.listenLoopDone
-	bl.mux.Unlock()
-	if listenLoopDone != nil {
-		<-listenLoopDone
-	}
-}
