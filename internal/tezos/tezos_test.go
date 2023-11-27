@@ -10,8 +10,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func strPtr(s string) *string { return &s }
-
 func newTestConnector(t *testing.T) (context.Context, *tezosConnector, *tzrpcbackendmocks.RpcClient, func()) {
 	mRPC := &tzrpcbackendmocks.RpcClient{}
 	config.RootConfigReset()
@@ -27,7 +25,6 @@ func newTestConnector(t *testing.T) (context.Context, *tezosConnector, *tzrpcbac
 	return ctx, c, mRPC, func() {
 		done()
 		mRPC.AssertExpectations(t)
-		c.WaitClosed()
 	}
 }
 

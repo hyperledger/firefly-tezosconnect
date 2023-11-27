@@ -26,7 +26,8 @@ var rootCmd = &cobra.Command{
 	Short: "Hyperledger FireFly Connector for Tezos blockchain",
 	Long:  ``,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return run()
+		ctx, cancelCtx := context.WithCancel(context.Background())
+		return run(ctx, cancelCtx)
 	},
 }
 
@@ -52,11 +53,10 @@ func InitConfig() {
 	txhandlerfactory.RegisterHandler(&simple.TransactionHandlerFactory{})
 }
 
-func run() error {
+func run(ctx context.Context, cancelCtx context.CancelFunc) error {
 	err := config.ReadConfig("tezosconnect", cfgFile)
 
 	// Setup logging after reading config (even if failed), to output header correctly
-	ctx, cancelCtx := context.WithCancel(context.Background())
 	defer cancelCtx()
 	ctx = log.WithLogger(ctx, logrus.WithField("pid", fmt.Sprintf("%d", os.Getpid())))
 	ctx = log.WithLogger(ctx, logrus.WithField("prefix", "tezosconnect"))
