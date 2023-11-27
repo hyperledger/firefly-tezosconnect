@@ -36,6 +36,7 @@ func TestConnectorInit(t *testing.T) {
 	conf.Set(BlockchainRPC, "")
 	cc, err := NewTezosConnector(context.Background(), conf)
 	assert.Regexp(t, "FF23051", err)
+	assert.Nil(t, cc)
 
 	conf.Set(BlockchainRPC, "https://ghostnet.ecadinfra.com")
 	conf.Set(EventsCatchupThreshold, 1)
@@ -48,14 +49,17 @@ func TestConnectorInit(t *testing.T) {
 	conf.Set(BlockchainRPC, "wrong rpc")
 	cc, err = NewTezosConnector(context.Background(), conf)
 	assert.Regexp(t, "FF23052", err)
+	assert.Nil(t, cc)
 
 	conf.Set(ConfigDataFormat, "map")
 	conf.Set(BlockCacheSize, "-1")
 	cc, err = NewTezosConnector(context.Background(), conf)
 	assert.Regexp(t, "FF23040", err)
+	assert.Nil(t, cc)
 
 	conf.Set(BlockCacheSize, "1")
 	conf.Set(TxCacheSize, "-1")
 	cc, err = NewTezosConnector(context.Background(), conf)
 	assert.Regexp(t, "FF23040", err)
+	assert.Nil(t, cc)
 }
