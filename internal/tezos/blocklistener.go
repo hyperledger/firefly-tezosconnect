@@ -87,39 +87,15 @@ func (bl *blockListener) listenLoop() {
 	failCount := 0
 	gapPotential := true
 	for {
-		if failCount > 0 {
-			if bl.c.doFailureDelay(bl.ctx, failCount) {
-				log.L(bl.ctx).Debugf("Block listener loop exiting")
-				return
-			}
-		} else {
-			// Sleep for the polling interval
-			select {
-			case <-time.After(bl.blockPollingInterval):
-			case <-bl.ctx.Done():
-				log.L(bl.ctx).Debugf("Block listener loop stopping")
-				return
-			}
+		if isSuccessfullyHandled := bl.handleFailCount(failCount); !isSuccessfullyHandled {
+			return
 		}
 
-		// (re)connect
-		if mon == nil {
-			mon = rpc.NewBlockHeaderMonitor()
-
-			// register the block monitor with our client
-			if err := bl.c.client.MonitorBlockHeader(bl.ctx, mon); err != nil {
-				mon.Close()
-				mon = nil
-				if ErrorStatus(err) == 404 {
-					log.L(bl.ctx).Errorf("monitor: event mode unsupported. %s", err.Error())
-				} else {
-					log.L(bl.ctx).Debugf("monitor: %s", err.Error())
-
-					<-bl.ctx.Done()
-					return
-				}
-				continue
-			}
+		isSuccessfullyReconnected, isGoingToNextBlockHeader := bl.reconnect(mon)
+		if !isSuccessfullyReconnected {
+			return
+		} else if isGoingToNextBlockHeader {
+			continue
 		}
 
 		// wait for new block headers
@@ -136,36 +112,84 @@ func (bl *blockListener) listenLoop() {
 		}
 
 		update := &ffcapi.BlockHashEvent{GapPotential: gapPotential}
-		var notifyPos *list.Element
-
-		candidate := bl.reconcileCanonicalChain(blockHead)
-		// Check this is the lowest position to notify from
-		if candidate != nil && (notifyPos == nil || candidate.Value.(*minimalBlockInfo).number < notifyPos.Value.(*minimalBlockInfo).number) {
-			notifyPos = candidate
-		}
-
-		if notifyPos != nil {
-			// We notify for all hashes from the point of change in the chain onwards
-			for notifyPos != nil {
-				update.BlockHashes = append(update.BlockHashes, notifyPos.Value.(*minimalBlockInfo).hash)
-				notifyPos = notifyPos.Next()
-			}
-
-			// Take a copy of the consumers in the lock
-			bl.mux.Lock()
-			consumers := make([]*blockUpdateConsumer, 0, len(bl.consumers))
-			for _, c := range bl.consumers {
-				consumers = append(consumers, c)
-			}
-			bl.mux.Unlock()
-
-			// Spin through delivering the block update
-			bl.dispatchToConsumers(consumers, update)
-		}
+		notifyPos := bl.getNotifyPosition(blockHead)
+		bl.notifyAndUpdate(notifyPos, update)
 
 		// Reset retry count when we have a full successful loop
 		failCount = 0
 		gapPotential = false
+	}
+}
+
+func (bl *blockListener) handleFailCount(failCount int) bool {
+	if failCount > 0 {
+		if bl.c.doFailureDelay(bl.ctx, failCount) {
+			log.L(bl.ctx).Debugf("Block listener loop exiting")
+			return false
+		}
+	} else {
+		// Sleep for the polling interval
+		select {
+		case <-time.After(bl.blockPollingInterval):
+		case <-bl.ctx.Done():
+			log.L(bl.ctx).Debugf("Block listener loop stopping")
+			return false
+		}
+	}
+	return true
+}
+
+func (bl *blockListener) reconnect(mon *rpc.BlockHeaderMonitor) (bool, bool) {
+	if mon == nil {
+		mon = rpc.NewBlockHeaderMonitor()
+
+		// register the block monitor with our client
+		if err := bl.c.client.MonitorBlockHeader(bl.ctx, mon); err != nil {
+			mon.Close()
+			mon = nil
+			if ErrorStatus(err) == 404 {
+				log.L(bl.ctx).Errorf("monitor: event mode unsupported. %s", err.Error())
+			} else {
+				log.L(bl.ctx).Debugf("monitor: %s", err.Error())
+
+				<-bl.ctx.Done()
+				return true, false
+			}
+			return false, true
+		}
+	}
+	return false, false
+}
+
+func (bl *blockListener) getNotifyPosition(blockHead *rpc.BlockHeaderLogEntry) *list.Element {
+	var notifyPos *list.Element
+
+	candidate := bl.reconcileCanonicalChain(blockHead)
+	// Check this is the lowest position to notify from
+	if candidate != nil && (notifyPos == nil || candidate.Value.(*minimalBlockInfo).number < notifyPos.Value.(*minimalBlockInfo).number) {
+		notifyPos = candidate
+	}
+	return notifyPos
+}
+
+func (bl *blockListener) notifyAndUpdate(notifyPos *list.Element, update *ffcapi.BlockHashEvent) {
+	if notifyPos != nil {
+		// We notify for all hashes from the point of change in the chain onwards
+		for notifyPos != nil {
+			update.BlockHashes = append(update.BlockHashes, notifyPos.Value.(*minimalBlockInfo).hash)
+			notifyPos = notifyPos.Next()
+		}
+
+		// Take a copy of the consumers in the lock
+		bl.mux.Lock()
+		consumers := make([]*blockUpdateConsumer, 0, len(bl.consumers))
+		for _, c := range bl.consumers {
+			consumers = append(consumers, c)
+		}
+		bl.mux.Unlock()
+
+		// Spin through delivering the block update
+		bl.dispatchToConsumers(consumers, update)
 	}
 }
 

@@ -53,11 +53,13 @@ func TestGetBlockInfoByNumberOK(t *testing.T) {
 	res, reason, err = c.BlockInfoByNumber(ctx, req) // cached
 	assert.NoError(t, err)
 	assert.Equal(t, "BMBeYrMJpLWrqCs7UTcFaUQCeWBqsjCLejX5D8zE8m9syHqHnZg", res.BlockHash)
+	assert.Equal(t, ffcapi.ErrorReason(""), reason)
 
 	req.ExpectedParentHash = "BMWDjzorc6GFb2DnengeB2TRikAENukebRwubnu6ghfZceicmig"
 	res, reason, err = c.BlockInfoByNumber(ctx, req) // cache miss
 	assert.NoError(t, err)
 	assert.Equal(t, "BMBeYrMJpLWrqCs7UTcFaUQCeWBqsjCLejX5D8zE8m9syHqHnZg", res.BlockHash)
+	assert.Equal(t, ffcapi.ErrorReason(""), reason)
 }
 
 func TestGetBlockInfoByNumberBlockNotFoundError(t *testing.T) {
