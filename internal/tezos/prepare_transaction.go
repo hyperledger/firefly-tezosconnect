@@ -81,6 +81,18 @@ func (c *tezosConnector) estimateAndAssignTxCost(ctx context.Context, op *codec.
 	return "", nil
 }
 
+func (c *tezosConnector) callTransaction(ctx context.Context, op *codec.Op, opts *rpc.CallOptions) (*rpc.Receipt, ffcapi.ErrorReason, error) {
+	sim, err := c.client.Simulate(ctx, op, opts)
+	if err != nil {
+		return nil, mapError(callRPCMethods, err), err
+	}
+	// fail with Tezos error when simulation failed
+	if !sim.IsSuccess() {
+		return nil, mapError(callRPCMethods, sim.Error()), sim.Error()
+	}
+	return sim, "", nil
+}
+
 func (c *tezosConnector) prepareInputParams(ctx context.Context, req *ffcapi.TransactionInput) (micheline.Parameters, error) {
 	var tezosParams micheline.Parameters
 
