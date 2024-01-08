@@ -88,7 +88,7 @@
 |Key|Description|Type|Default Value|
 |---|-----------|----|-------------|
 |network|Tezos network, by default - mainnet (mainnet | ghostnet | nairobinet)|string|`mainnet`
-|rpc|URL of the Tezos RPC node|string|`https://rpc.tzstats.com`
+|rpc|URL of the Tezos RPC node|string|`https://mainnet.ecadinfra.com`
 |signatory|URL of the signatory service for remote tx signing|string|`<nil>`
 
 ## connector.events

@@ -52,7 +52,7 @@ func InitConfig(conf config.Section) {
 	conf.AddKnownKey(RetryInitDelay, DefaultRetryInitDelay)
 	conf.AddKnownKey(RetryMaxDelay, DefaultRetryMaxDelay)
 	conf.AddKnownKey(TxCacheSize, 250)
-	conf.AddKnownKey(BlockchainRPC, "https://rpc.tzstats.com")
+	conf.AddKnownKey(BlockchainRPC, "https://mainnet.ecadinfra.com")
 	conf.AddKnownKey(BlockchainNetwork, "mainnet")
 	conf.AddKnownKey(BlockchainSignatory)
 }
