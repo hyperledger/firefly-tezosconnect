@@ -1,0 +1,6 @@
+connector:
+  blockchain:
+    rpc: https://ghostnet.example.com
+persistence:
+  leveldb:
+    path: ./.leveldb
