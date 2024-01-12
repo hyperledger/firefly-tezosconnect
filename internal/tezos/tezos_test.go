@@ -15,6 +15,7 @@ func newTestConnector(t *testing.T) (context.Context, *tezosConnector, *tzrpcbac
 	config.RootConfigReset()
 	conf := config.RootSection("unittest")
 	InitConfig(conf)
+	conf.AddKnownKey(BlockchainRPC, "https://ghostnet.example.com")
 	logrus.SetLevel(logrus.DebugLevel)
 	ctx, done := context.WithCancel(context.Background())
 	cc, err := NewTezosConnector(ctx, conf)
