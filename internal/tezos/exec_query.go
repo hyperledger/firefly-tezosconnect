@@ -30,27 +30,20 @@ func (c *tezosConnector) QueryInvoke(ctx context.Context, req *ffcapi.QueryInvok
 	if err != nil {
 		return nil, ffcapi.ErrorReasonTransactionReverted, err
 	}
-
-	outputs, _ := json.Marshal(resp)
-	if val, ok := resp.(string); ok {
-		if values := strings.Split(val, ","); len(values) > 1 {
-			outputs, _ = json.Marshal(values)
-		}
-	}
 	return &ffcapi.QueryInvokeResponse{
-		Outputs: fftypes.JSONAnyPtrBytes(outputs),
+		Outputs: convertRunViewResponseToOutputs(resp),
 	}, "", nil
 }
 
-func (c *tezosConnector) runView(ctx context.Context, entrypoint, addrFrom, addrTo string, args micheline.Prim) (interface{}, error) {
+func (c *tezosConnector) runView(ctx context.Context, entrypoint, addrFrom, addrTo string, args micheline.Prim) (rpc.RunViewResponse, error) {
 	toAddress, err := tezos.ParseAddress(addrTo)
 	if err != nil {
-		return nil, i18n.NewError(ctx, msgs.MsgInvalidToAddress, addrTo, err)
+		return rpc.RunViewResponse{}, i18n.NewError(ctx, msgs.MsgInvalidToAddress, addrTo, err)
 	}
 
 	fromAddress, err := tezos.ParseAddress(addrFrom)
 	if err != nil {
-		return nil, i18n.NewError(ctx, msgs.MsgInvalidFromAddress, addrFrom, err)
+		return rpc.RunViewResponse{}, i18n.NewError(ctx, msgs.MsgInvalidFromAddress, addrFrom, err)
 	}
 
 	req := rpc.RunViewRequest{
@@ -66,8 +59,33 @@ func (c *tezosConnector) runView(ctx context.Context, entrypoint, addrFrom, addr
 	var res rpc.RunViewResponse
 	err = c.client.RunView(ctx, rpc.Head, &req, &res)
 	if err != nil {
-		return nil, err
+		return rpc.RunViewResponse{}, err
+	}
+	return res, nil
+}
+
+func convertRunViewResponseToOutputs(resp rpc.RunViewResponse) *fftypes.JSONAny {
+	var res interface{}
+	if resp.Data.LooksLikeMap() {
+		resultMap := make([]map[string]interface{}, len(resp.Data.Args))
+		for i, arg := range resp.Data.Args {
+			mapEntry := make(map[string]interface{}, 2)
+			key := arg.Args[0]
+			value := arg.Args[1]
+			mapEntry["key"] = key.Value(key.OpCode)
+			mapEntry["value"] = value.Value(value.OpCode)
+			resultMap[i] = mapEntry
+		}
+		res = resultMap
+	} else {
+		res = resp.Data.Value(resp.Data.OpCode)
 	}
 
-	return res.Data.Value(res.Data.OpCode), nil
+	outputs, _ := json.Marshal(res)
+	if val, ok := res.(string); ok {
+		if values := strings.Split(val, ","); len(values) > 1 {
+			outputs, _ = json.Marshal(values)
+		}
+	}
+	return fftypes.JSONAnyPtrBytes(outputs)
 }
