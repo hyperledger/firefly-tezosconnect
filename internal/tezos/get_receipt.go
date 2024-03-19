@@ -120,6 +120,12 @@ func (c *tezosConnector) TransactionReceipt(ctx context.Context, req *ffcapi.Tra
 
 				operationReceipts = append(operationReceipts, extraInfo)
 				fullReceipt, _ = json.Marshal(operationReceipts)
+			} else if o.Kind() == tezos.OpTypeOrigination {
+				res := o.(*rpc.Origination).Result()
+				if len(res.OriginatedContracts) > 0 {
+					contractAddress := res.OriginatedContracts[0].ContractAddress()
+					receiptResponse.ContractLocation = fftypes.JSONAnyPtrBytes([]byte(contractAddress))
+				}
 			}
 		}
 
