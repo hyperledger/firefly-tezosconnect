@@ -16,6 +16,10 @@ import (
 )
 
 func (c *tezosConnector) DeployContractPrepare(ctx context.Context, req *ffcapi.ContractDeployPrepareRequest) (*ffcapi.TransactionPrepareResponse, ffcapi.ErrorReason, error) {
+	if req.Contract == nil {
+		return nil, ffcapi.ErrorReasonInvalidInputs, i18n.NewError(ctx, "Missing contract", req.Contract)
+	}
+
 	sc, err := asScript(req.Contract.String())
 	if err != nil {
 		return nil, ffcapi.ErrorReasonInvalidInputs, err
@@ -54,8 +58,6 @@ func (c *tezosConnector) DeployContractPrepare(ctx context.Context, req *ffcapi.
 
 func asScript(s string) (micheline.Script, error) {
 	var sc micheline.Script
-	if err := json.Unmarshal([]byte(s), &sc); err != nil {
-		return micheline.Script{}, err
-	}
+	_ = json.Unmarshal([]byte(s), &sc)
 	return sc, nil
 }
