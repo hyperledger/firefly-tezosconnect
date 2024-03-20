@@ -20,10 +20,7 @@ func (c *tezosConnector) DeployContractPrepare(ctx context.Context, req *ffcapi.
 		return nil, ffcapi.ErrorReasonInvalidInputs, i18n.NewError(ctx, "Missing contract", req.Contract)
 	}
 
-	sc, err := asScript(req.Contract.String())
-	if err != nil {
-		return nil, ffcapi.ErrorReasonInvalidInputs, err
-	}
+	sc := asScript(req.Contract.String())
 	orig := &codec.Origination{
 		Script: sc,
 	}
@@ -56,8 +53,8 @@ func (c *tezosConnector) DeployContractPrepare(ctx context.Context, req *ffcapi.
 	}, "", nil
 }
 
-func asScript(s string) (micheline.Script, error) {
+func asScript(s string) micheline.Script {
 	var sc micheline.Script
 	_ = json.Unmarshal([]byte(s), &sc)
-	return sc, nil
+	return sc
 }
