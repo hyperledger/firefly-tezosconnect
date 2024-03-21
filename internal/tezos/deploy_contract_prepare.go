@@ -20,7 +20,8 @@ func (c *tezosConnector) DeployContractPrepare(ctx context.Context, req *ffcapi.
 		return nil, ffcapi.ErrorReasonInvalidInputs, i18n.NewError(ctx, "Missing contract", req.Contract)
 	}
 
-	sc := asScript(req.Contract.String())
+	var sc micheline.Script
+	_ = json.Unmarshal([]byte(req.Contract.String()), &sc)
 	orig := &codec.Origination{
 		Script: sc,
 	}
@@ -30,11 +31,11 @@ func (c *tezosConnector) DeployContractPrepare(ctx context.Context, req *ffcapi.
 		return nil, ffcapi.ErrorReasonInvalidInputs, i18n.NewError(ctx, msgs.MsgInvalidFromAddress, req.From, err)
 	}
 
-	hash, _ := c.client.GetBlockHash(ctx, rpc.Head)
+	headBlockHash, _ := c.client.GetBlockHash(ctx, rpc.Head)
 	op := codec.NewOp().
 		WithContents(orig).
 		WithSource(addr).
-		WithBranch(hash)
+		WithBranch(headBlockHash)
 
 	err = c.completeOp(ctx, op, req.From, req.Nonce)
 	if err != nil {
@@ -45,16 +46,10 @@ func (c *tezosConnector) DeployContractPrepare(ctx context.Context, req *ffcapi.
 		return nil, reason, err
 	}
 
-	log.L(ctx).Infof("Prepared deploy transaction dataLen=%d gas=%s", len(op.Bytes()), req.Gas.Int())
+	log.L(ctx).Infof("Prepared deploy transaction dataLen=%d", len(op.Bytes()))
 
 	return &ffcapi.TransactionPrepareResponse{
 		Gas:             req.Gas,
 		TransactionData: hex.EncodeToString(op.Bytes()),
 	}, "", nil
-}
-
-func asScript(s string) micheline.Script {
-	var sc micheline.Script
-	_ = json.Unmarshal([]byte(s), &sc)
-	return sc
 }
