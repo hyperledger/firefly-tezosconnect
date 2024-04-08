@@ -12,6 +12,8 @@ import (
 	"github.com/hyperledger/firefly-transaction-manager/pkg/ffcapi"
 )
 
+const _address = "address"
+
 type receiptExtraInfo struct {
 	ContractAddress     *tezos.Address    `json:"contractAddress"`
 	ConsumedGas         *fftypes.FFBigInt `json:"consumedGas"`
@@ -91,7 +93,7 @@ func (c *tezosConnector) TransactionReceipt(ctx context.Context, req *ffcapi.Tra
 				var script *micheline.Script
 				if tx.Destination.IsContract() {
 					location, _ := json.Marshal(map[string]string{
-						"address": tx.Destination.String(),
+						_address: tx.Destination.String(),
 					})
 					receiptResponse.ContractLocation = fftypes.JSONAnyPtrBytes(location)
 					extraInfo.ContractAddress = &tx.Destination
@@ -120,6 +122,16 @@ func (c *tezosConnector) TransactionReceipt(ctx context.Context, req *ffcapi.Tra
 
 				operationReceipts = append(operationReceipts, extraInfo)
 				fullReceipt, _ = json.Marshal(operationReceipts)
+			} else if o.Kind() == tezos.OpTypeOrigination {
+				result := o.(*rpc.Origination).Result()
+				originatedContracts := result.OriginatedContracts
+				if len(originatedContracts) > 0 {
+					location, _ := json.Marshal(map[string]string{
+						_address: originatedContracts[0].ContractAddress(),
+					})
+					receiptResponse.ContractLocation = fftypes.JSONAnyPtrBytes(location)
+				}
+				fullReceipt = c.extraInfoForDeployTransactionReceipt(ctx, result, operationReceipts)
 			}
 		}
 
@@ -127,4 +139,41 @@ func (c *tezosConnector) TransactionReceipt(ctx context.Context, req *ffcapi.Tra
 	}
 
 	return receiptResponse, "", nil
+}
+
+func (c *tezosConnector) extraInfoForDeployTransactionReceipt(ctx context.Context, res rpc.OperationResult, operationReceipts []receiptExtraInfo) []byte {
+	status := res.Status.String()
+	extraInfo := receiptExtraInfo{
+		ConsumedGas:         fftypes.NewFFBigInt(res.ConsumedMilliGas / 1000),
+		StorageSize:         fftypes.NewFFBigInt(res.StorageSize),
+		PaidStorageSizeDiff: fftypes.NewFFBigInt(res.PaidStorageSizeDiff),
+		Status:              &status,
+	}
+
+	if len(res.Errors) > 0 {
+		errorMessage := ""
+		for _, err := range res.Errors {
+			errorMessage += err.Error()
+		}
+		extraInfo.ErrorMessage = &errorMessage
+	}
+
+	if prim := res.Storage; prim != nil {
+		val := micheline.NewValue(res.Storage.BuildType(), *prim)
+		m, err := val.Map()
+		if err != nil {
+			log.L(ctx).Error("error parsing contract storage: ", err)
+		}
+		storageBytes, _ := json.Marshal(m)
+		extraInfo.Storage = fftypes.JSONAnyPtrBytes(storageBytes)
+	}
+
+	if len(res.OriginatedContracts) > 0 {
+		extraInfo.ContractAddress = &res.OriginatedContracts[0]
+	}
+
+	operationReceipts = append(operationReceipts, extraInfo)
+	fullReceipt, _ := json.Marshal(operationReceipts)
+
+	return fullReceipt
 }
