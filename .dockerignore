@@ -1,3 +1,6 @@
 # IDE configs
 .vscode
 .idea
+
+# Compiled output
+firefly-tezosconnect
