@@ -3,4 +3,4 @@ connector:
     rpc: https://ghostnet.example.com
 persistence:
   leveldb:
-    path: ./.leveldb
+    path: "../test/ldb"
