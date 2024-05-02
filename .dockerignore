@@ -2,5 +2,13 @@
 .vscode
 .idea
 
-# Compiled output
+# Git configs
+.github
+
+# Tmp data
+.leveldb
+test/ldb
+coverage.txt
+
+# Executables
 firefly-tezosconnect
