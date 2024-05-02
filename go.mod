@@ -1,6 +1,6 @@
 module github.com/hyperledger/firefly-tezosconnect
 
-go 1.21
+go 1.22.2
 
 require (
 	blockwatch.cc/tzgo v1.17.1
