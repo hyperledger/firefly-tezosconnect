@@ -1,77 +1,49 @@
 package cmd
 
 import (
-	"strconv"
+	"runtime/debug"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 )
 
-func TestVersionCommand(t *testing.T) {
-	testCases := []struct {
-		name                 string
-		buildDate            string
-		buildCommit          string
-		buildVersionOverride string
-		output               string
-		shortened            bool
-		errMsg               string
-	}{
-		{
-			name:                 "error",
-			buildDate:            time.Now().String(),
-			buildCommit:          "243413535",
-			buildVersionOverride: "0.0.1",
-			output:               "unknown",
-			errMsg:               "FF23016: Invalid output type: unknown",
-		},
-		{
-			name:                 "yaml output",
-			buildDate:            time.Now().String(),
-			buildCommit:          "243413535",
-			buildVersionOverride: "0.0.1",
-			output:               "yaml",
-		},
-		{
-			name:                 "json output",
-			buildDate:            time.Now().String(),
-			buildCommit:          "243413535",
-			buildVersionOverride: "0.0.1",
-			output:               "json",
-		},
-		{
-			name:                 "shortened",
-			buildDate:            time.Now().String(),
-			buildCommit:          "243413535",
-			buildVersionOverride: "0.0.1",
-			shortened:            true,
-		},
-		{
-			name:                 "version is empty",
-			buildDate:            time.Now().String(),
-			buildCommit:          "243413535",
-			buildVersionOverride: "",
-			output:               "json",
-		},
-	}
+func TestVersionCmdDefault(t *testing.T) {
+	rootCmd.SetArgs([]string{"version"})
+	defer rootCmd.SetArgs([]string{})
+	err := rootCmd.Execute()
+	assert.NoError(t, err)
+}
 
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			command := versionCommand()
-			BuildVersionOverride = tc.buildVersionOverride
-			BuildCommit = tc.buildCommit
-			BuildDate = tc.buildDate
-			command.Flags().Set("output", tc.output)
-			command.Flags().Set("short", strconv.FormatBool(tc.shortened))
-			err := command.RunE(command, []string{"arg1"})
+func TestVersionCmdYAML(t *testing.T) {
+	rootCmd.SetArgs([]string{"version", "-o", "yaml"})
+	defer rootCmd.SetArgs([]string{})
+	err := rootCmd.Execute()
+	assert.NoError(t, err)
+}
 
-			if tc.errMsg != "" {
-				assert.Error(t, err)
-				assert.Equal(t, tc.errMsg, err.Error())
-			} else {
-				assert.NoError(t, err)
-			}
-		})
-	}
+func TestVersionCmdJSON(t *testing.T) {
+	rootCmd.SetArgs([]string{"version", "-o", "json"})
+	defer rootCmd.SetArgs([]string{})
+	err := rootCmd.Execute()
+	assert.NoError(t, err)
+}
+
+func TestVersionCmdInvalidType(t *testing.T) {
+	rootCmd.SetArgs([]string{"version", "-o", "wrong"})
+	defer rootCmd.SetArgs([]string{})
+	err := rootCmd.Execute()
+	assert.Regexp(t, "FF23016", err)
+}
+
+func TestVersionCmdShorthand(t *testing.T) {
+	rootCmd.SetArgs([]string{"version", "-s"})
+	defer rootCmd.SetArgs([]string{})
+	err := rootCmd.Execute()
+	assert.NoError(t, err)
+}
+
+func TestSetBuildInfoWithBI(t *testing.T) {
+	info := &Info{}
+	setBuildInfo(info, &debug.BuildInfo{Main: debug.Module{Version: "12345"}}, true)
+	assert.Equal(t, "12345", info.Version)
 }

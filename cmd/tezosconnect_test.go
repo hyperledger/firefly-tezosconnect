@@ -47,3 +47,13 @@ func TestRun(t *testing.T) {
 		})
 	}
 }
+
+func TestRunMigrationsBadConfig(t *testing.T) {
+	rootCmd.SetArgs([]string{
+		"migrate", "leveldb2postgres", "-f", "../test/fail-start.tezosconnect.yaml",
+	})
+	defer rootCmd.SetArgs([]string{})
+
+	err := Execute()
+	assert.Regexp(t, "FF21049", err)
+}
