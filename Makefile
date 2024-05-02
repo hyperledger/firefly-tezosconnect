@@ -4,6 +4,10 @@ GOBIN := $(shell $(VGO) env GOPATH)/bin
 LINT := $(GOBIN)/golangci-lint
 MOCKERY := $(GOBIN)/mockery
 
+# Expect that FireFly compiles with CGO disabled
+CGO_ENABLED=0
+GOGC=30
+
 .DELETE_ON_ERROR:
 
 all: build test go-mod-tidy
@@ -15,7 +19,7 @@ coverage: test coverage.html
 lint: ${LINT}
 		$(LINT) run -v --timeout 5m
 ${MOCKERY}:
-		$(VGO) install github.com/vektra/mockery/v2@v2.23.2
+		$(VGO) install github.com/vektra/mockery/cmd/mockery@latest
 ${LINT}:
 		$(VGO) install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.55.2
 mockpaths:
