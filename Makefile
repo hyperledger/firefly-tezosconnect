@@ -19,7 +19,7 @@ coverage: test coverage.html
 lint: ${LINT}
 		$(LINT) run -v --timeout 5m
 ${MOCKERY}:
-		$(VGO) install github.com/vektra/mockery/cmd/mockery@latest
+		$(VGO) install github.com/vektra/mockery/v2@v2.43.0
 ${LINT}:
 		$(VGO) install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.55.2
 mockpaths:
