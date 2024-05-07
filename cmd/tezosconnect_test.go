@@ -26,7 +26,7 @@ func TestRun(t *testing.T) {
 		},
 		{
 			name:    "error on NewTezosConnector",
-			cfgFile: "../test/firefly.tezosconnect-without-connector.yaml",
+			cfgFile: "../test/no-connector.tezosconnect.yaml",
 			errMsg:  "FF23051",
 		},
 	}
@@ -50,7 +50,7 @@ func TestRun(t *testing.T) {
 
 func TestRunMigrationsBadConfig(t *testing.T) {
 	rootCmd.SetArgs([]string{
-		"migrate", "leveldb2postgres", "-f", "../test/fail-start.tezosconnect.yaml",
+		"migrate", "leveldb2postgres", "-f", "../test/no-connector.tezosconnect.yaml",
 	})
 	defer rootCmd.SetArgs([]string{})
 
