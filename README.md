@@ -1,4 +1,4 @@
-![build](https://github.com/hyperledger/firefly-tezosconnect/actions/workflows/go.yml/badge.svg?branch=main&event=push)
+[![build](https://github.com/hyperledger/firefly-tezosconnect/actions/workflows/go.yml/badge.svg?branch=main&event=push)](https://github.com/hyperledger/firefly-tezosconnect/actions/workflows/go.yml?branch=main&event=push)
 [![codecov](https://codecov.io/gh/hyperledger/firefly-tezosconnect/branch/main/graph/badge.svg)](https://codecov.io/gh/hyperledger/firefly-tezosconnect)
 [![Go Report Card](https://goreportcard.com/badge/github.com/hyperledger/firefly-tezosconnect)](https://goreportcard.com/report/github.com/hyperledger/firefly-tezosconnect)
 [![Hits-of-Code](https://hitsofcode.com/github/hyperledger/firefly-tezosconnect?branch=main)](https://hitsofcode.com/view/github/hyperledger/firefly-tezosconnect?branch=main)
