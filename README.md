@@ -10,7 +10,7 @@
 This repo provides a reference implementation of the FireFly Connector API (FFCAPI)
 for Tezos blockchain.
 
-See the [Hyperledger Firefly Documentation](https://hyperledger.github.io/firefly/overview/public_vs_permissioned.html#firefly-architecture-for-public-chains)
+See the [Hyperledger Firefly Documentation](https://hyperledger.github.io/firefly/latest/overview/public_vs_permissioned/#firefly-architecture-for-public-chains)
 and the [FireFly Transaction Manager](https://github.com/hyperledger/firefly-transaction-manager) repository for
 more information.
 
