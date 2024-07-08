@@ -33,7 +33,8 @@ For a full list of configuration options see [config.md](./config.md)
 ```yaml
 connector:
   blockchain:
-    rpc: https://rpc.ghost.tzstats.com
+    # other public RPCs can be found: https://docs.tezos.com/architecture/rpc#public-and-private-rpc-nodes
+    rpc: https://ghostnet.ecadinfra.com
     network: ghostnet
     signatory: http://localhost:6732
 ```
