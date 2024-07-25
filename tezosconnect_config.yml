@@ -2,9 +2,7 @@ log:
   level: debug
 connector:
   blockchain:
-    # other public rpcs:
-    # https://rpc.ghost.tzstats.com
-    # https://ghostnet.tezos.marigold.dev
+    # other public RPCs can be found: https://docs.tezos.com/architecture/rpc#public-and-private-rpc-nodes
     rpc: https://ghostnet.ecadinfra.com
     network: ghostnet
     signatory: http://127.0.0.1:6732
