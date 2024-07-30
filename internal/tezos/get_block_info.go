@@ -4,8 +4,8 @@ import (
 	"context"
 	"strconv"
 
-	"blockwatch.cc/tzgo/rpc"
-	"blockwatch.cc/tzgo/tezos"
+	"github.com/trilitech/tzgo/rpc"
+	"github.com/trilitech/tzgo/tezos"
 	"github.com/hyperledger/firefly-common/pkg/fftypes"
 	"github.com/hyperledger/firefly-common/pkg/i18n"
 	"github.com/hyperledger/firefly-common/pkg/log"

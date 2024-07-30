@@ -3,7 +3,7 @@ package tezos
 import (
 	"context"
 
-	"blockwatch.cc/tzgo/tezos"
+	"github.com/trilitech/tzgo/tezos"
 	"github.com/hyperledger/firefly-common/pkg/fftypes"
 	"github.com/hyperledger/firefly-transaction-manager/pkg/ffcapi"
 )

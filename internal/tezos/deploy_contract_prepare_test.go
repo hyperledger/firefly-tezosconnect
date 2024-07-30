@@ -1,8 +1,8 @@
 package tezos
 
 import (
-	"blockwatch.cc/tzgo/rpc"
-	"blockwatch.cc/tzgo/tezos"
+	"github.com/trilitech/tzgo/rpc"
+	"github.com/trilitech/tzgo/tezos"
 	"github.com/stretchr/testify/mock"
 	"testing"
 

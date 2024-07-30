@@ -10,8 +10,8 @@ import (
 	"io"
 	"net/http"
 
-	"blockwatch.cc/tzgo/codec"
-	"blockwatch.cc/tzgo/tezos"
+	"github.com/trilitech/tzgo/codec"
+	"github.com/trilitech/tzgo/tezos"
 	"github.com/hyperledger/firefly-transaction-manager/pkg/ffcapi"
 )
 

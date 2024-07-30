@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"blockwatch.cc/tzgo/rpc"
+	"github.com/trilitech/tzgo/rpc"
 	lru "github.com/hashicorp/golang-lru"
 	"github.com/hyperledger/firefly-common/pkg/config"
 	"github.com/hyperledger/firefly-common/pkg/fftypes"

@@ -5,17 +5,17 @@ package tzrpcbackendmocks
 import (
 	context "context"
 
-	codec "blockwatch.cc/tzgo/codec"
+	codec "github.com/trilitech/tzgo/codec"
 
 	http "net/http"
 
-	micheline "blockwatch.cc/tzgo/micheline"
+	micheline "github.com/trilitech/tzgo/micheline"
 
 	mock "github.com/stretchr/testify/mock"
 
-	rpc "blockwatch.cc/tzgo/rpc"
+	rpc "github.com/trilitech/tzgo/rpc"
 
-	tezos "blockwatch.cc/tzgo/tezos"
+	tezos "github.com/trilitech/tzgo/tezos"
 
 	time "time"
 )
