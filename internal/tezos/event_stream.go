@@ -19,12 +19,12 @@ type eventStream struct {
 	catchup        bool
 }
 
-func (es *eventStream) addEventListener(ctx context.Context, req *ffcapi.EventListenerAddRequest) (*listener, error) {
+func (es *eventStream) addEventListener(_ context.Context, _ *ffcapi.EventListenerAddRequest) (*listener, error) {
 	// TODO: impl
 	return nil, nil
 }
 
-func (es *eventStream) startEventListener(l *listener) {
+func (es *eventStream) startEventListener(_ *listener) {
 	// TODO: impl
 }
 

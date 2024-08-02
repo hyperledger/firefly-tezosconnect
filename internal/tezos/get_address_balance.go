@@ -3,9 +3,9 @@ package tezos
 import (
 	"context"
 
-	"github.com/trilitech/tzgo/tezos"
 	"github.com/hyperledger/firefly-common/pkg/fftypes"
 	"github.com/hyperledger/firefly-transaction-manager/pkg/ffcapi"
+	"github.com/trilitech/tzgo/tezos"
 )
 
 // AddressBalance gets the balance of the specified address

@@ -6,11 +6,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/trilitech/tzgo/rpc"
 	"github.com/hyperledger/firefly-common/pkg/config"
 	"github.com/hyperledger/firefly-common/pkg/fftypes"
 	"github.com/hyperledger/firefly-common/pkg/log"
 	"github.com/hyperledger/firefly-transaction-manager/pkg/ffcapi"
+	"github.com/trilitech/tzgo/rpc"
 )
 
 type blockUpdateConsumer struct {
@@ -166,7 +166,7 @@ func (bl *blockListener) getNotifyPosition(blockHead *rpc.BlockHeaderLogEntry) *
 
 	candidate := bl.reconcileCanonicalChain(blockHead)
 	// Check this is the lowest position to notify from
-	if candidate != nil && (notifyPos == nil || candidate.Value.(*minimalBlockInfo).number < notifyPos.Value.(*minimalBlockInfo).number) {
+	if candidate != nil && (candidate.Value.(*minimalBlockInfo).number < notifyPos.Value.(*minimalBlockInfo).number) {
 		notifyPos = candidate
 	}
 	return notifyPos
@@ -302,7 +302,7 @@ func (bl *blockListener) rebuildCanonicalChain() *list.Element {
 	for {
 		var bi *rpc.Block
 		var reason ffcapi.ErrorReason
-		err := bl.c.retry.Do(bl.ctx, "rebuild listener canonical chain", func(attempt int) (retry bool, err error) {
+		err := bl.c.retry.Do(bl.ctx, "rebuild listener canonical chain", func(_ int) (retry bool, err error) {
 			bi, reason, err = bl.c.getBlockInfoByNumber(bl.ctx, nextBlockNumber, false, "")
 			return reason != ffcapi.ErrorReasonNotFound, err
 		})
@@ -356,7 +356,7 @@ func (bl *blockListener) trimToLastValidBlock() (lastValidBlock *minimalBlockInf
 		currentViewBlock := lastElem.Value.(*minimalBlockInfo)
 		var freshBlockInfo *rpc.Block
 		var reason ffcapi.ErrorReason
-		err := bl.c.retry.Do(bl.ctx, "rebuild listener canonical chain", func(attempt int) (retry bool, err error) {
+		err := bl.c.retry.Do(bl.ctx, "rebuild listener canonical chain", func(_ int) (retry bool, err error) {
 			freshBlockInfo, reason, err = bl.c.getBlockInfoByNumber(bl.ctx, currentViewBlock.number, false, "")
 			return reason != ffcapi.ErrorReasonNotFound, err
 		})
@@ -401,7 +401,7 @@ func (bl *blockListener) dispatchToConsumers(consumers []*blockUpdateConsumer, u
 
 // getBlockHeightWithRetry keeps retrying attempting to get the initial block height until successful
 func (bl *blockListener) establishBlockHeightWithRetry() error {
-	return bl.c.retry.Do(bl.ctx, "get initial block height", func(attempt int) (retry bool, err error) {
+	return bl.c.retry.Do(bl.ctx, "get initial block height", func(_ int) (retry bool, err error) {
 		headBlock, err := bl.c.client.GetHeadBlock(bl.ctx)
 		if err != nil {
 			log.L(bl.ctx).Warnf("Block height could not be obtained: %s", err.Error())

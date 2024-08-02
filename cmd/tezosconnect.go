@@ -25,7 +25,7 @@ var rootCmd = &cobra.Command{
 	Use:   "tezosconnect",
 	Short: "Hyperledger FireFly Connector for Tezos blockchain",
 	Long:  ``,
-	RunE: func(cmd *cobra.Command, args []string) error {
+	RunE: func(_ *cobra.Command, _ []string) error {
 		ctx, cancelCtx := context.WithCancel(context.Background())
 		return run(ctx, cancelCtx)
 	},
