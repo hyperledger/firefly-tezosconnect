@@ -290,6 +290,7 @@ func TestTransactionPrepareWrongSimulateStatusError(t *testing.T) {
 												Raw: json.RawMessage{},
 											},
 										},
+										Status: tezos.OpStatusFailed,
 									},
 								},
 							},
