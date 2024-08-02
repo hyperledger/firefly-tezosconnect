@@ -61,11 +61,13 @@ func (c *tezosConnector) TransactionReceipt(ctx context.Context, req *ffcapi.Tra
 	}
 
 	receiptResponse := &ffcapi.TransactionReceiptResponse{
-		BlockNumber:      fftypes.NewFFBigInt(blockNumber),
-		TransactionIndex: fftypes.NewFFBigInt(int64(receipt.Pos)),
-		BlockHash:        receipt.Block.String(),
-		Success:          receipt.IsSuccess(),
-		ProtocolID:       receipt.Op.Protocol.String(),
+		TransactionReceiptResponseBase: ffcapi.TransactionReceiptResponseBase{
+			BlockNumber:      fftypes.NewFFBigInt(blockNumber),
+			TransactionIndex: fftypes.NewFFBigInt(int64(receipt.Pos)),
+			BlockHash:        receipt.Block.String(),
+			Success:          receipt.IsSuccess(),
+			ProtocolID:       receipt.Op.Protocol.String(),
+		},
 	}
 
 	if receipt.Op != nil {
