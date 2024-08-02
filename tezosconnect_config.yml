@@ -3,10 +3,11 @@ log:
 connector:
   blockchain:
     # other public RPCs can be found: https://docs.tezos.com/architecture/rpc#public-and-private-rpc-nodes
-    rpc: https://ghostnet.ecadinfra.com
+    rpc: https://rpc.ghostnet.teztnets.com
     network: ghostnet
     signatory: http://127.0.0.1:6732
 persistence:
+  type: leveldb
   leveldb:
     path: ./.leveldb
 ffcore:
