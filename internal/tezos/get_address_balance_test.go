@@ -4,8 +4,8 @@ import (
 	"errors"
 	"testing"
 
-	"blockwatch.cc/tzgo/rpc"
-	"blockwatch.cc/tzgo/tezos"
+	"github.com/trilitech/tzgo/rpc"
+	"github.com/trilitech/tzgo/tezos"
 	"github.com/hyperledger/firefly-transaction-manager/pkg/ffcapi"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"

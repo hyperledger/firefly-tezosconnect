@@ -7,10 +7,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"blockwatch.cc/tzgo/codec"
-	"blockwatch.cc/tzgo/contract"
-	"blockwatch.cc/tzgo/rpc"
-	"blockwatch.cc/tzgo/tezos"
+	"github.com/trilitech/tzgo/codec"
+	"github.com/trilitech/tzgo/contract"
+	"github.com/trilitech/tzgo/rpc"
+	"github.com/trilitech/tzgo/tezos"
 	"github.com/hyperledger/firefly-common/pkg/fftypes"
 	"github.com/hyperledger/firefly-transaction-manager/pkg/ffcapi"
 	"github.com/stretchr/testify/assert"
@@ -290,6 +290,7 @@ func TestTransactionPrepareWrongSimulateStatusError(t *testing.T) {
 												Raw: json.RawMessage{},
 											},
 										},
+										Status: tezos.OpStatusFailed,
 									},
 								},
 							},
@@ -424,8 +425,8 @@ func Test_getNetworkParamsByName(t *testing.T) {
 	params := getNetworkParamsByName("ghostnet")
 	assert.Equal(t, params, tezos.GhostnetParams)
 
-	params = getNetworkParamsByName("nairobinet")
-	assert.Equal(t, params, tezos.NairobinetParams)
+	params = getNetworkParamsByName("parisnet")
+	assert.Equal(t, params, tezos.ParisnetParams)
 
 	params = getNetworkParamsByName("default")
 	assert.Equal(t, params, tezos.DefaultParams)

@@ -5,8 +5,8 @@ import (
 	"os"
 	"testing"
 
-	"blockwatch.cc/tzgo/micheline"
-	"blockwatch.cc/tzgo/rpc"
+	"github.com/trilitech/tzgo/micheline"
+	"github.com/trilitech/tzgo/rpc"
 	"github.com/hyperledger/firefly-common/pkg/fftypes"
 	"github.com/hyperledger/firefly-transaction-manager/pkg/ffcapi"
 	"github.com/stretchr/testify/assert"

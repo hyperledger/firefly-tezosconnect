@@ -6,13 +6,13 @@ import (
 	"errors"
 	"strings"
 
-	"blockwatch.cc/tzgo/micheline"
-	"blockwatch.cc/tzgo/rpc"
-	"blockwatch.cc/tzgo/tezos"
 	"github.com/hyperledger/firefly-common/pkg/fftypes"
 	"github.com/hyperledger/firefly-common/pkg/i18n"
 	"github.com/hyperledger/firefly-tezosconnect/internal/msgs"
 	"github.com/hyperledger/firefly-transaction-manager/pkg/ffcapi"
+	"github.com/trilitech/tzgo/micheline"
+	"github.com/trilitech/tzgo/rpc"
+	"github.com/trilitech/tzgo/tezos"
 )
 
 // QueryInvoke executes a method on a blockchain smart contract, which might execute Smart Contract code, but does not affect the blockchain state.

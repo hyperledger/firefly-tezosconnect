@@ -9,16 +9,16 @@ import (
 	"net/http"
 	"strings"
 
-	"blockwatch.cc/tzgo/codec"
-	"blockwatch.cc/tzgo/contract"
-	"blockwatch.cc/tzgo/micheline"
-	"blockwatch.cc/tzgo/rpc"
-	"blockwatch.cc/tzgo/tezos"
 	"github.com/hyperledger/firefly-common/pkg/fftypes"
 	"github.com/hyperledger/firefly-common/pkg/i18n"
 	"github.com/hyperledger/firefly-common/pkg/log"
 	"github.com/hyperledger/firefly-tezosconnect/internal/msgs"
 	"github.com/hyperledger/firefly-transaction-manager/pkg/ffcapi"
+	"github.com/trilitech/tzgo/codec"
+	"github.com/trilitech/tzgo/contract"
+	"github.com/trilitech/tzgo/micheline"
+	"github.com/trilitech/tzgo/rpc"
+	"github.com/trilitech/tzgo/tezos"
 )
 
 // TransactionPrepare validates transaction inputs against the supplied schema/Michelson and performs any binary serialization required (prior to signing) to encode a transaction from JSON into the native blockchain format
@@ -183,8 +183,8 @@ func getNetworkParamsByName(name string) *tezos.Params {
 	switch strings.ToLower(name) {
 	case "ghostnet":
 		return tezos.GhostnetParams
-	case "nairobinet":
-		return tezos.NairobinetParams
+	case "parisnet":
+		return tezos.ParisnetParams
 	default:
 		return tezos.DefaultParams
 	}

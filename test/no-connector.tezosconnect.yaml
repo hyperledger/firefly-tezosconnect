@@ -1,3 +1,4 @@
 persistence:
+  type: leveldb
   leveldb:
     path: "../test/ldb"

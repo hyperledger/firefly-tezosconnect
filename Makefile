@@ -24,7 +24,7 @@ ${LINT}:
 		$(VGO) install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.55.2
 mockpaths:
 		$(eval FFTM_PATH := $(shell $(VGO) list -f '{{.Dir}}' github.com/hyperledger/firefly-transaction-manager/pkg/fftm))
-		$(eval TEZOS_CLIENT_PATH := $(shell $(VGO) list -f '{{.Dir}}' blockwatch.cc/tzgo/rpc))
+		$(eval TEZOS_CLIENT_PATH := $(shell $(VGO) list -f '{{.Dir}}' github.com/trilitech/tzgo/rpc))
 
 define makemock
 mocks: mocks-$(strip $(1))-$(strip $(2))

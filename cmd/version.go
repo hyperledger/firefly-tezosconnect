@@ -37,7 +37,7 @@ func versionCommand() *cobra.Command {
 		Use:   "version",
 		Short: "Prints the version info",
 		Long:  "",
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, _ []string) error {
 			info := &Info{
 				Version: BuildVersionOverride,
 				Date:    BuildDate,

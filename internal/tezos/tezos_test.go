@@ -39,7 +39,7 @@ func TestConnectorInit(t *testing.T) {
 	assert.Regexp(t, "FF23051", err)
 	assert.Nil(t, cc)
 
-	conf.Set(BlockchainRPC, "https://ghostnet.ecadinfra.com")
+	conf.Set(BlockchainRPC, "https://rpc.ghostnet.teztnets.com")
 	conf.Set(EventsCatchupThreshold, 1)
 	conf.Set(EventsCatchupPageSize, 500)
 

@@ -98,22 +98,22 @@ func (c *tezosConnector) EventStreamStopped(ctx context.Context, req *ffcapi.Eve
 }
 
 // EventListenerVerifyOptions validates the configuration options for a listener, applying any defaults needed by the connector, and returning the update options for FFTM to persist
-func (c *tezosConnector) EventListenerVerifyOptions(ctx context.Context, req *ffcapi.EventListenerVerifyOptionsRequest) (*ffcapi.EventListenerVerifyOptionsResponse, ffcapi.ErrorReason, error) {
+func (c *tezosConnector) EventListenerVerifyOptions(_ context.Context, _ *ffcapi.EventListenerVerifyOptionsRequest) (*ffcapi.EventListenerVerifyOptionsResponse, ffcapi.ErrorReason, error) {
 	return nil, "", nil
 }
 
 // EventListenerAdd begins/resumes listening on set of events that must be consistently ordered. Blockchain specific signatures of the events are included, along with initial conditions (initial block number etc.), and the last stored checkpoint (if any)
-func (c *tezosConnector) EventListenerAdd(ctx context.Context, req *ffcapi.EventListenerAddRequest) (*ffcapi.EventListenerAddResponse, ffcapi.ErrorReason, error) {
+func (c *tezosConnector) EventListenerAdd(_ context.Context, _ *ffcapi.EventListenerAddRequest) (*ffcapi.EventListenerAddResponse, ffcapi.ErrorReason, error) {
 	return nil, "", nil
 }
 
 // EventListenerRemove ends listening on a set of events previous started
-func (c *tezosConnector) EventListenerRemove(ctx context.Context, req *ffcapi.EventListenerRemoveRequest) (*ffcapi.EventListenerRemoveResponse, ffcapi.ErrorReason, error) {
+func (c *tezosConnector) EventListenerRemove(_ context.Context, _ *ffcapi.EventListenerRemoveRequest) (*ffcapi.EventListenerRemoveResponse, ffcapi.ErrorReason, error) {
 	return nil, "", nil
 }
 
 // EventListenerHWM queries the current high water mark checkpoint for a listener. Called at regular intervals when there are no events in flight for a listener, to ensure checkpoint are written regularly even when there is no activity
-func (c *tezosConnector) EventListenerHWM(ctx context.Context, req *ffcapi.EventListenerHWMRequest) (*ffcapi.EventListenerHWMResponse, ffcapi.ErrorReason, error) {
+func (c *tezosConnector) EventListenerHWM(_ context.Context, _ *ffcapi.EventListenerHWMRequest) (*ffcapi.EventListenerHWMResponse, ffcapi.ErrorReason, error) {
 	return nil, "", nil
 }
 

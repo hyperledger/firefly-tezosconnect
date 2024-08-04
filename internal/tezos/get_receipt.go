@@ -4,12 +4,12 @@ import (
 	"context"
 	"encoding/json"
 
-	"blockwatch.cc/tzgo/micheline"
-	"blockwatch.cc/tzgo/rpc"
-	"blockwatch.cc/tzgo/tezos"
 	"github.com/hyperledger/firefly-common/pkg/fftypes"
 	"github.com/hyperledger/firefly-common/pkg/log"
 	"github.com/hyperledger/firefly-transaction-manager/pkg/ffcapi"
+	"github.com/trilitech/tzgo/micheline"
+	"github.com/trilitech/tzgo/rpc"
+	"github.com/trilitech/tzgo/tezos"
 )
 
 const _address = "address"
@@ -61,11 +61,13 @@ func (c *tezosConnector) TransactionReceipt(ctx context.Context, req *ffcapi.Tra
 	}
 
 	receiptResponse := &ffcapi.TransactionReceiptResponse{
-		BlockNumber:      fftypes.NewFFBigInt(blockNumber),
-		TransactionIndex: fftypes.NewFFBigInt(int64(receipt.Pos)),
-		BlockHash:        receipt.Block.String(),
-		Success:          receipt.IsSuccess(),
-		ProtocolID:       receipt.Op.Protocol.String(),
+		TransactionReceiptResponseBase: ffcapi.TransactionReceiptResponseBase{
+			BlockNumber:      fftypes.NewFFBigInt(blockNumber),
+			TransactionIndex: fftypes.NewFFBigInt(int64(receipt.Pos)),
+			BlockHash:        receipt.Block.String(),
+			Success:          receipt.IsSuccess(),
+			ProtocolID:       receipt.Op.Protocol.String(),
+		},
 	}
 
 	if receipt.Op != nil {

@@ -10,9 +10,9 @@ import (
 	"io"
 	"net/http"
 
-	"blockwatch.cc/tzgo/codec"
-	"blockwatch.cc/tzgo/tezos"
 	"github.com/hyperledger/firefly-transaction-manager/pkg/ffcapi"
+	"github.com/trilitech/tzgo/codec"
+	"github.com/trilitech/tzgo/tezos"
 )
 
 // TransactionSend combines a previously prepared encoded transaction, with a current gas price, and submits it to the transaction pool of the blockchain for mining

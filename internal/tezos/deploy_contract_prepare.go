@@ -5,14 +5,14 @@ import (
 	"encoding/hex"
 	"encoding/json"
 
-	"blockwatch.cc/tzgo/codec"
-	"blockwatch.cc/tzgo/micheline"
-	"blockwatch.cc/tzgo/rpc"
-	"blockwatch.cc/tzgo/tezos"
 	"github.com/hyperledger/firefly-common/pkg/i18n"
 	"github.com/hyperledger/firefly-common/pkg/log"
 	"github.com/hyperledger/firefly-tezosconnect/internal/msgs"
 	"github.com/hyperledger/firefly-transaction-manager/pkg/ffcapi"
+	"github.com/trilitech/tzgo/codec"
+	"github.com/trilitech/tzgo/micheline"
+	"github.com/trilitech/tzgo/rpc"
+	"github.com/trilitech/tzgo/tezos"
 )
 
 func (c *tezosConnector) DeployContractPrepare(ctx context.Context, req *ffcapi.ContractDeployPrepareRequest) (*ffcapi.TransactionPrepareResponse, ffcapi.ErrorReason, error) {
