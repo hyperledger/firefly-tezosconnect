@@ -92,7 +92,7 @@
 
 |Key|Description|Type|Default Value|
 |---|-----------|----|-------------|
-|network|Tezos network, by default - mainnet (mainnet | ghostnet | nairobinet)|string|`mainnet`
+|network|Tezos network, by default - mainnet (mainnet | ghostnet | parisnet)|string|`mainnet`
 |rpc|URL of the Tezos RPC node|string|`<nil>`
 |signatory|URL of the signatory service for remote tx signing|string|`<nil>`
 
