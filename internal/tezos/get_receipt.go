@@ -32,12 +32,14 @@ type receiptExtraInfo struct {
 
 // TransactionReceipt queries to see if a receipt is available for a given transaction hash
 func (c *tezosConnector) TransactionReceipt(ctx context.Context, req *ffcapi.TransactionReceiptRequest) (*ffcapi.TransactionReceiptResponse, ffcapi.ErrorReason, error) {
+	opts := &rpc.DefaultOptions
+
 	// ensure block observer is running
 	rpcClient := c.client.(*rpc.Client)
 	rpcClient.Listen()
 
 	// wait for confirmations
-	res := rpc.NewResult(tezos.MustParseOpHash(req.TransactionHash)) // .WithTTL(op.TTL).WithConfirmations(opts.Confirmations)
+	res := rpc.NewResult(tezos.MustParseOpHash(req.TransactionHash)).WithTTL(opts.TTL).WithConfirmations(opts.Confirmations)
 	res.Listen(rpcClient.BlockObserver)
 	res.WaitContext(ctx)
 	if err := res.Err(); err != nil {
