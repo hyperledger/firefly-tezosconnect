@@ -16,6 +16,7 @@ ffcore:
     - tezos
 confirmations:
   required: 0
+  fetchReceiptUponEntry: true
 transactions:
   handler:
     name: simple
