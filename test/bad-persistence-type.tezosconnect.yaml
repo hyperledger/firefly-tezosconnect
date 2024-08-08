@@ -1,0 +1,5 @@
+connector:
+  blockchain:
+    rpc: https://ghostnet.example.com
+persistence:
+  type: wrong-type
