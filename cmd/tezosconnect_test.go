@@ -25,6 +25,11 @@ func TestRun(t *testing.T) {
 			errMsg:  "FF00101",
 		},
 		{
+			name:    "wrong persistence type error",
+			cfgFile: "../test/bad-persistence-type.tezosconnect.yaml",
+			errMsg:  "FF21043",
+		},
+		{
 			name:    "error on NewTezosConnector",
 			cfgFile: "../test/no-connector.tezosconnect.yaml",
 			errMsg:  "FF23051",
