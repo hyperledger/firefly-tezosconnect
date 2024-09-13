@@ -4,8 +4,8 @@ go 1.22.2
 
 require (
 	github.com/hashicorp/golang-lru v0.5.4
-	github.com/hyperledger/firefly-common v1.4.8
-	github.com/hyperledger/firefly-transaction-manager v1.3.15
+	github.com/hyperledger/firefly-common v1.4.11
+	github.com/hyperledger/firefly-transaction-manager v1.3.18
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.8.0
 	github.com/stretchr/testify v1.8.4
