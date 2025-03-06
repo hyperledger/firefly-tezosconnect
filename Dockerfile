@@ -1,4 +1,4 @@
-FROM golang:1.22.2-alpine AS builder
+FROM golang:1.23.0-alpine AS builder
 RUN apk add make
 ARG BUILD_VERSION
 ENV BUILD_VERSION=${BUILD_VERSION}
