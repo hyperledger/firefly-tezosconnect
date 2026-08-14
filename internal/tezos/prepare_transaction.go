@@ -65,6 +65,12 @@ func (c *tezosConnector) estimateAndAssignTxCost(ctx context.Context, op *codec.
 			verb = "forced"
 		}
 		limits := v.Limits()
+		if i >= len(costs) {
+			log.L(ctx).Debugf("OP#%03d: %s fee(%s)=%d gas_limit(%s)=%d storage_limit(%s)=%d (no simulation cost data)",
+				i, v.Kind(), verb, limits.Fee, verb, limits.GasLimit, verb, limits.StorageLimit,
+			)
+			continue
+		}
 		log.L(ctx).Debugf("OP#%03d: %s gas_used(sim)=%d storage_used(sim)=%d storage_burn(sim)=%d alloc_burn(sim)=%d fee(%s)=%d gas_limit(%s)=%d storage_limit(%s)=%d ",
 			i, v.Kind(), costs[i].GasUsed, costs[i].StorageUsed, costs[i].StorageBurn, costs[i].AllocationBurn,
 			verb, limits.Fee, verb, limits.GasLimit, verb, limits.StorageLimit,
