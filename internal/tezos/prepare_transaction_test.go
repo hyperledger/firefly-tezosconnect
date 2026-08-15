@@ -421,6 +421,43 @@ func TestTransactionPrepareWithRevealEmptyServerError(t *testing.T) {
 	assert.Nil(t, resp)
 }
 
+func Test_estimateAndAssignTxCostFewerSimResultsThanOpContents(t *testing.T) {
+	ctx, c, mRPC, done := newTestConnector(t)
+	defer done()
+
+	// Simulate returns only one result, but the op has two contents entries.
+	// The bounds check should prevent an index-out-of-bounds panic for the second entry.
+	mRPC.On("Simulate", ctx, mock.Anything, mock.Anything).
+		Return(&rpc.Receipt{
+			Op: &rpc.Operation{
+				Contents: []rpc.TypedOperation{
+					rpc.Transaction{
+						Manager: rpc.Manager{
+							Generic: rpc.Generic{
+								Metadata: rpc.OperationMetadata{
+									Result: rpc.OperationResult{
+										Status: tezos.OpStatusApplied,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		}, nil)
+
+	op := codec.NewOp()
+	txArgs := contract.TxArgs{}
+	op.WithContents(txArgs.Encode())
+	op.WithContents(txArgs.Encode()) // second entry has no corresponding simulation cost
+
+	opts := &rpc.DefaultOptions
+	opts.IgnoreLimits = true
+
+	_, err := c.estimateAndAssignTxCost(ctx, op, opts)
+	assert.NoError(t, err)
+}
+
 func Test_getNetworkParamsByName(t *testing.T) {
 	params := getNetworkParamsByName("ghostnet")
 	assert.Equal(t, params, tezos.GhostnetParams)
