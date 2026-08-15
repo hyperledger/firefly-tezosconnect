@@ -104,14 +104,49 @@ func (c *tezosConnector) prepareInputParams(ctx context.Context, req *ffcapi.Tra
 
 	for i, p := range req.Params {
 		if p != nil {
-			err := tezosParams.UnmarshalJSON([]byte(*p))
-			if err != nil {
+			if err := unmarshalParameters([]byte(*p), &tezosParams); err != nil {
 				return tezosParams, i18n.NewError(ctx, msgs.MsgUnmarshalParamFail, i, err)
 			}
 		}
 	}
 
 	return tezosParams, nil
+}
+
+// unmarshalParameters parses micheline.Parameters from JSON, replicating the
+// logic of (*micheline.Parameters).UnmarshalJSON but avoiding infinite
+// recursion under Go 1.27+. In Go 1.27, encoding/json/v2 resolves the method
+// set of a pointer-alias's underlying type, so the original
+//
+//	type alias *Parameters; json.Unmarshal(data, alias(p))
+//
+// pattern inside (*Parameters).UnmarshalJSON calls itself recursively until
+// the stack overflows. Using a plain struct alias breaks the method-set chain.
+func unmarshalParameters(data []byte, p *micheline.Parameters) error {
+	if len(data) == 0 {
+		return nil
+	}
+	if data[0] == '[' {
+		// non-entrypoint calling convention: value only
+		return json.Unmarshal(data, &p.Value)
+	}
+	// entrypoint calling convention: {"entrypoint": "...", "value": {...}}
+	type paramsAlias struct {
+		Entrypoint string         `json:"entrypoint"`
+		Value      micheline.Prim `json:"value"`
+	}
+	var alias paramsAlias
+	if err := json.Unmarshal(data, &alias); err != nil {
+		return err
+	}
+	p.Entrypoint = alias.Entrypoint
+	p.Value = alias.Value
+	if p.Value.IsValid() {
+		return nil
+	}
+	// legacy calling convention: bare prim value without entrypoint wrapper
+	p.Entrypoint = "default"
+	return json.Unmarshal(data, &p.Value)
 }
 
 func (c *tezosConnector) buildOp(ctx context.Context, params micheline.Parameters, fromString, toString string, nonce *fftypes.FFBigInt) (*codec.Op, error) {
